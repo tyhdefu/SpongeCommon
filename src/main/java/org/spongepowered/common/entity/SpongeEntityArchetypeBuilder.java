@@ -130,23 +130,16 @@ public class SpongeEntityArchetypeBuilder extends AbstractDataBuilder<EntityArch
     @SuppressWarnings("unchecked")
     @Override
     public EntityArchetype.Builder setData(DataManipulator<?, ?> manipulator) {
-        if (this.entityData == null) {
-            this.entityData = DataContainer.createNew();
-            this.compound = null;
-        }
+
         DataUtil.getRawNbtProcessor(NbtDataTypes.ENTITY, manipulator.getClass())
-                .ifPresent(processor -> processor.storeToView(this.entityData, manipulator));
+                .ifPresent(processor -> processor.storeToCompound(this.compound, manipulator));
         return this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <E, V extends BaseValue<E>> EntityArchetype.Builder set(V value) {
-        if (this.entityData == null) {
-            this.entityData = DataContainer.createNew();
-            this.compound = null;
-        }
-        this.compound = null;
+
         DataUtil.getRawNbtProcessor(NbtDataTypes.ENTITY, value.getKey())
                 .ifPresent(processor -> processor.offer(this.entityData, value));
         return this;

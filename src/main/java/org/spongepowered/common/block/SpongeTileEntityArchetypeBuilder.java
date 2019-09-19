@@ -59,7 +59,7 @@ public class SpongeTileEntityArchetypeBuilder extends AbstractDataBuilder<TileEn
     BlockState     blockState;    // -These two fields can never be null
     @Nullable
     TileEntityType tileEntityType;
-    DataContainer  tileData;      // This can be empty, but cannot be null.
+    NBTTagCompound  tileData;      // This can be empty, but cannot be null.
 
     public SpongeTileEntityArchetypeBuilder() {
         super(TileEntityArchetype.class, Constants.Sponge.TileEntityArchetype.BASE_VERSION);
@@ -77,7 +77,7 @@ public class SpongeTileEntityArchetypeBuilder extends AbstractDataBuilder<TileEn
     public TileEntityArchetype.Builder from(TileEntityArchetype value) {
         this.tileEntityType = value.getTileEntityType();
         this.blockState = value.getState();
-        this.tileData = value.getTileData();
+        this.tileData = value instanceof SpongeTileEntityArchetype ? ((SpongeTileEntityArchetype) value).getCompound().copy() : NbtTranslator.getInstance().translateData(value.toContainer());
         return this;
     }
 
@@ -116,10 +116,10 @@ public class SpongeTileEntityArchetypeBuilder extends AbstractDataBuilder<TileEn
         nbttagcompound.removeTag("x");
         nbttagcompound.removeTag("y");
         nbttagcompound.removeTag("z");
-        String tileId = nbttagcompound.getString("id");
-        nbttagcompound.removeTag("id");
+        String tileId = nbttagcompound.getString(Constants.Item.BLOCK_ENTITY_ID);
+        nbttagcompound.removeTag(Constants.Item.BLOCK_ENTITY_ID);
         nbttagcompound.setString(Constants.Sponge.TileEntityArchetype.TILE_ENTITY_ID, tileId);
-        this.tileData = NbtTranslator.getInstance().translate(nbttagcompound);
+        this.tileData = nbttagcompound;
         this.blockState = tileEntity.getBlock();
         this.tileEntityType = tileEntity.getType();
         return this;
@@ -130,7 +130,7 @@ public class SpongeTileEntityArchetypeBuilder extends AbstractDataBuilder<TileEn
         checkNotNull(dataView, "Provided DataView cannot be null!");
         final DataContainer copy = dataView.copy();
         DataUtil.getValidators(Validations.TILE_ENTITY).validate(copy);
-        this.tileData = copy;
+        this.tileData = NbtTranslator.getInstance().translateData(copy);
         return this;
     }
 
@@ -138,10 +138,10 @@ public class SpongeTileEntityArchetypeBuilder extends AbstractDataBuilder<TileEn
     @Override
     public TileEntityArchetype.Builder setData(DataManipulator<?, ?> manipulator) {
         if (this.tileData == null) {
-            this.tileData = DataContainer.createNew();
+            this.tileData = new NBTTagCompound();
         }
         DataUtil.getRawNbtProcessor(NbtDataTypes.TILE_ENTITY, manipulator.getClass())
-                .ifPresent(processor -> processor.storeToView(this.tileData, manipulator));
+                .ifPresent(processor -> processor.storeToCompound(this.tileData, manipulator));
         return this;
     }
 
@@ -149,7 +149,7 @@ public class SpongeTileEntityArchetypeBuilder extends AbstractDataBuilder<TileEn
     @Override
     public <E, V extends BaseValue<E>> TileEntityArchetype.Builder set(V value) {
         if (this.tileData == null) {
-            this.tileData = DataContainer.createNew();
+            this.tileData = new NBTTagCompound();
         }
         DataUtil.getRawNbtProcessor(NbtDataTypes.TILE_ENTITY, value.getKey())
                 .ifPresent(processor -> processor.offer(this.tileData, value));
@@ -160,7 +160,7 @@ public class SpongeTileEntityArchetypeBuilder extends AbstractDataBuilder<TileEn
     @Override
     public <E, V extends BaseValue<E>> TileEntityArchetype.Builder set(Key<V> key, E value) {
         if (this.tileData == null) {
-            this.tileData = DataContainer.createNew();
+            this.tileData = new NBTTagCompound();
         }
         DataUtil.getRawNbtProcessor(NbtDataTypes.TILE_ENTITY, key)
                 .ifPresent(processor -> processor.offer(this.tileData, value));
@@ -172,7 +172,7 @@ public class SpongeTileEntityArchetypeBuilder extends AbstractDataBuilder<TileEn
         checkState(this.blockState != null, "BlockState cannot be null!");
         checkState(this.tileEntityType != null, "TileEntityType cannot be null!");
         if (this.tileData == null) {
-            this.tileData = DataContainer.createNew();
+            this.tileData = new NBTTagCompound();
         }
         return new SpongeTileEntityArchetype(this);
     }

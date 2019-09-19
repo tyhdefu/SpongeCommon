@@ -155,6 +155,10 @@ public class SpongeManipulatorRegistry implements SpongeAdditionalCatalogRegistr
             .concurrencyLevel(4)
             .makeMap();
 
+        private final Map<Class<? extends ImmutableDataManipulator<?, ?>>, List<NbtDataProcessor<?, ?>>> immutabelNbtProcessorMap = new MapMaker()
+            .concurrencyLevel(4)
+            .makeMap();
+
         private final Map<Key<? extends BaseValue<?>>, List<ValueProcessor<?, ?>>> valueProcessorMap = new MapMaker()
             .concurrencyLevel(4)
             .makeMap();
@@ -284,6 +288,33 @@ public class SpongeManipulatorRegistry implements SpongeAdditionalCatalogRegistr
         immutableProcessorList.add(processor);
 
         return this;
+    }
+
+    public <M extends DataManipulator<M, I>, I extends ImmutableDataManipulator<I, M>> SpongeManipulatorRegistry register(Class<M> manipulatorClass,
+        Class<? extends M> implclass,
+        Class<I> immutable,
+        Class<? extends I> implImmutable,
+        NbtDataProcessor<M, I> processor) {
+        checkState(this.tempRegistry != null);
+        checkNotNull(processor);
+        checkNotNull(manipulatorClass);
+        if (!this.interfaceToImplDataManipulatorClasses.containsKey(manipulatorClass)) {
+            this.interfaceToImplDataManipulatorClasses.put(manipulatorClass, implclass);
+        }
+        checkState(SpongeDataManager.allowRegistrations, "Registrations are no longer allowed!");
+        List<NbtDataProcessor<?, ?>> nbtDataProcessors = this.tempRegistry.nbtProcessorMap.get(manipulatorClass);
+        if (nbtDataProcessors == null) {
+            nbtDataProcessors = new CopyOnWriteArrayList<>();
+            this.tempRegistry.nbtProcessorMap.put(manipulatorClass, nbtDataProcessors);
+            this.tempRegistry.nbtProcessorMap.put(implclass, nbtDataProcessors);
+        }
+        List<NbtDataProcessor<?, ?>> immutableProcessors = this.tempRegistry.immutabelNbtProcessorMap.get(immutable);
+        if (immutableProcessors == null) {
+            immutableProcessors = new CopyOnWriteArrayList<>();
+            this.tempRegistry.immutabelNbtProcessorMap.put(immutable, immutableProcessors);
+            this.tempRegistry.immutabelNbtProcessorMap.put(implImmutable, immutableProcessors);
+        }
+
     }
 
     public <E, V extends BaseValue<E>> void registerValueProcessor(Key<V> key, ValueProcessor<E, V> valueProcessor) {

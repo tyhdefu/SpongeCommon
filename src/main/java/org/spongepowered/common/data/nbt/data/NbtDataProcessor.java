@@ -37,19 +37,12 @@ public interface NbtDataProcessor<M extends DataManipulator<M, I>, I extends Imm
 
     int getPriority();
 
-    NbtDataType getTargetType();
-
     boolean isCompatible(NBTTagCompound compound);
 
     Optional<M> readFrom(NBTTagCompound compound);
 
-    Optional<M> readFrom(DataView view);
-
     Optional<NBTTagCompound> storeToCompound(NBTTagCompound compound, M manipulator);
-
-    Optional<DataView> storeToView(DataView view, M manipulator);
 
     DataTransactionResult remove(NBTTagCompound data);
 
-    DataTransactionResult remove(DataView data);
 }

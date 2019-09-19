@@ -55,7 +55,7 @@ public class SpongeTileEntityArchetype extends AbstractArchetype<TileEntityType,
     final BlockState blockState;
 
     SpongeTileEntityArchetype(SpongeTileEntityArchetypeBuilder builder) {
-        super(builder.tileEntityType, NbtTranslator.getInstance().translateData(builder.tileData));
+        super(builder.tileEntityType, builder.tileData.copy());
         this.blockState = builder.blockState;
     }
 
@@ -137,7 +137,7 @@ public class SpongeTileEntityArchetype extends AbstractArchetype<TileEntityType,
     public TileEntityArchetype copy() {
         final SpongeTileEntityArchetypeBuilder builder = new SpongeTileEntityArchetypeBuilder();
         builder.tileEntityType = this.type;
-        builder.tileData = NbtTranslator.getInstance().translate(this.data);
+        builder.tileData = this.data.copy();
         builder.blockState = this.blockState;
         return builder.build();
     }

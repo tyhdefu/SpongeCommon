@@ -78,6 +78,7 @@ import org.spongepowered.common.data.builder.item.*;
 import org.spongepowered.common.data.builder.manipulator.InvisibilityDataAddVanishUpdater;
 import org.spongepowered.common.data.builder.manipulator.immutable.block.ImmutableSpongeTreeDataBuilder;
 import org.spongepowered.common.data.builder.manipulator.immutable.item.ImmutableItemEnchantmentDataBuilder;
+import org.spongepowered.common.data.nbt.IsFlyingNbtProcessor;
 import org.spongepowered.common.effect.potion.PotionEffectContentUpdater;
 import org.spongepowered.common.effect.potion.SpongePotionBuilder;
 import org.spongepowered.common.entity.SpongeEntityArchetypeBuilder;
@@ -898,7 +899,13 @@ public final class DataRegistrar {
         DataUtil.registerValueProcessor(Keys.EXACT_TELEPORT, new EndGatewayExactTeleportValueProcessor());
         DataUtil.registerValueProcessor(Keys.ARMOR_STAND_TAKING_DISABLED, new TakingDisabledValueProcessor());
         DataUtil.registerValueProcessor(Keys.ARMOR_STAND_PLACING_DISABLED, new PlacingDisabledValueProcessor());
-        
+
+        SpongeManipulatorRegistry.getInstance().register(FlyingData.class, SpongeFlyingData.class, ImmutableFlyingData.class, ImmutableSpongeFlyingData.class, new IsFlyingNbtProcessor());
+        SpongeManipulatorRegistry.getInstance().register(FlyingData.class, SpongeFlyingData.class, ImmutableFlyingData.class, ImmutableSpongeFlyingData.class, new IsFlyingNbtProcessor());
+        SpongeManipulatorRegistry.getInstance().register(FlyingData.class, SpongeFlyingData.class, ImmutableFlyingData.class, ImmutableSpongeFlyingData.class, new IsFlyingNbtProcessor());
+        SpongeManipulatorRegistry.getInstance().register(FlyingData.class, SpongeFlyingData.class, ImmutableFlyingData.class, ImmutableSpongeFlyingData.class, new IsFlyingNbtProcessor());
+        SpongeManipulatorRegistry.getInstance().register(FlyingData.class, SpongeFlyingData.class, ImmutableFlyingData.class, ImmutableSpongeFlyingData.class, new IsFlyingNbtProcessor());
+
         // Properties
         final PropertyRegistry propertyRegistry = Sponge.getPropertyRegistry();
 

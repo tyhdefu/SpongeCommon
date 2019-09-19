@@ -27,7 +27,6 @@ package org.spongepowered.common.data.nbt;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.nbt.NBTTagCompound;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.data.manipulator.DataManipulator;
 import org.spongepowered.api.data.manipulator.ImmutableDataManipulator;
 import org.spongepowered.common.data.nbt.data.NbtDataProcessor;
@@ -47,11 +46,6 @@ public class SpongeNbtProcessorDelegate<M extends DataManipulator<M, I>, I exten
     @Override
     public int getPriority() {
         return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public NbtDataType getTargetType() {
-        return this.nbtDataType;
     }
 
     @Override
@@ -76,31 +70,9 @@ public class SpongeNbtProcessorDelegate<M extends DataManipulator<M, I>, I exten
     }
 
     @Override
-    public Optional<M> readFrom(final DataView view) {
-        for (final NbtDataProcessor<M, I> processor : this.processors) {
-            final Optional<M> returnVal = processor.readFrom(view);
-            if (returnVal.isPresent()) {
-                return returnVal;
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Override
     public Optional<NBTTagCompound> storeToCompound(final NBTTagCompound compound, final M manipulator) {
         for (final NbtDataProcessor<M, I> processor : this.processors) {
             final Optional<NBTTagCompound> returnVal = processor.storeToCompound(compound, manipulator);
-            if (returnVal.isPresent()) {
-                return returnVal;
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<DataView> storeToView(final DataView view, final M manipulator) {
-        for (final NbtDataProcessor<M, I> processor : this.processors) {
-            final Optional<DataView> returnVal = processor.storeToView(view, manipulator);
             if (returnVal.isPresent()) {
                 return returnVal;
             }
@@ -113,8 +85,4 @@ public class SpongeNbtProcessorDelegate<M extends DataManipulator<M, I>, I exten
         return DataTransactionResult.failNoData();
     }
 
-    @Override
-    public DataTransactionResult remove(final DataView data) {
-        return DataTransactionResult.failNoData();
-    }
 }

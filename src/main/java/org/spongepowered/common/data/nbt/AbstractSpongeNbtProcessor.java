@@ -41,8 +41,4 @@ public abstract class AbstractSpongeNbtProcessor<T extends DataManipulator<T, I>
         return 100;
     }
 
-    @Override
-    public final NbtDataType getTargetType() {
-        return this.dataType;
-    }
 }
