@@ -903,6 +903,7 @@ public final class DataRegistrar {
 
         SpongeManipulatorRegistry.getInstance().register(FlyingData.class, SpongeFlyingData.class, ImmutableFlyingData.class, ImmutableSpongeFlyingData.class, new IsFlyingNbtProcessor());
         SpongeManipulatorRegistry.getInstance().register(SignData.class, SpongeSignData.class, ImmutableSignData.class, ImmutableSpongeSignData.class, new SignDataNbtProcessor());
+        SpongeManipulatorRegistry.getInstance().register
 
         // Properties
         final PropertyRegistry propertyRegistry = Sponge.getPropertyRegistry();

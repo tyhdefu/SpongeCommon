@@ -54,7 +54,7 @@ public class SpongeTileEntityArchetype extends AbstractArchetype<TileEntityType,
 
     final BlockState blockState;
 
-    SpongeTileEntityArchetype(SpongeTileEntityArchetypeBuilder builder) {
+    SpongeTileEntityArchetype(final SpongeTileEntityArchetypeBuilder builder) {
         super(builder.tileEntityType, builder.tileData.copy());
         this.blockState = builder.blockState;
     }
@@ -75,19 +75,19 @@ public class SpongeTileEntityArchetype extends AbstractArchetype<TileEntityType,
     }
 
     @Override
-    public Optional<org.spongepowered.api.block.tileentity.TileEntity> apply(Location<World> location) {
+    public Optional<org.spongepowered.api.block.tileentity.TileEntity> apply(final Location<World> location) {
         final BlockState currentState = location.getBlock();
         final Block currentBlock = ((IBlockState) currentState).getBlock();
         final Block newBlock = ((IBlockState) this.blockState).getBlock();
         final net.minecraft.world.World minecraftWorld = (net.minecraft.world.World) location.getExtent();
 
-        BlockPos blockpos = VecHelper.toBlockPos(location);
+        final BlockPos blockpos = VecHelper.toBlockPos(location);
         if (currentBlock != newBlock) {
             ((World) minecraftWorld).setBlock(blockpos.getX(), blockpos.getY(), blockpos.getZ(), this.blockState, BlockChangeFlags.ALL);
         }
         final NBTTagCompound compound = this.data.copy();
 
-        TileEntity tileEntity = minecraftWorld.getTileEntity(blockpos);
+        final TileEntity tileEntity = minecraftWorld.getTileEntity(blockpos);
         if (tileEntity == null) {
             return Optional.empty();
         }
@@ -100,7 +100,7 @@ public class SpongeTileEntityArchetype extends AbstractArchetype<TileEntityType,
     }
 
     @Override
-    public BlockSnapshot toSnapshot(Location<World> location) {
+    public BlockSnapshot toSnapshot(final Location<World> location) {
         final SpongeBlockSnapshotBuilder builder = SpongeBlockSnapshotBuilder.pooled();
         builder.blockState = this.blockState;
         builder.compound = this.data.copy();
@@ -143,7 +143,7 @@ public class SpongeTileEntityArchetype extends AbstractArchetype<TileEntityType,
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
@@ -153,7 +153,7 @@ public class SpongeTileEntityArchetype extends AbstractArchetype<TileEntityType,
         if (!super.equals(o)) {
             return false;
         }
-        SpongeTileEntityArchetype that = (SpongeTileEntityArchetype) o;
+        final SpongeTileEntityArchetype that = (SpongeTileEntityArchetype) o;
         return this.blockState.equals(that.blockState);
     }
 

@@ -36,14 +36,14 @@ public interface NbtValueProcessor<E, V extends BaseValue<E>> {
 
     int getPriority();
 
-    boolean isCompatible(NbtDataType nbtDataType);
+    boolean isCompatible(NbtDataType type);
 
-    Optional<V> readFrom(NBTTagCompound compound);
+    Optional<V> readFrom(NBTTagCompound data);
 
-    Optional<E> readValue(NBTTagCompound compound);
+    Optional<E> readValue(NBTTagCompound data);
 
-    DataTransactionResult offer(NBTTagCompound NBTTagCompound, E value);
+    DataTransactionResult offer(NBTTagCompound data, E value);
 
-    DataTransactionResult remove(NBTTagCompound compound);
+    DataTransactionResult remove(NBTTagCompound data);
 
 }

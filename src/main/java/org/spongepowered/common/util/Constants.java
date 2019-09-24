@@ -673,6 +673,14 @@ public final class Constants {
             public static final DataQuery MATERIALCOST = DataQuery.of("materialcost");
             public static final DataQuery LEVELCOST = DataQuery.of("levelcost");
         }
+
+        public static final class Sign {
+            public static final String TEXT = "Text";
+            public static final String SIGN_TEXT_1 = "Text1";
+            public static final String SIGN_TEXT_2 = "Text2";
+            public static final String SIGN_TEXT_3 = "Text3";
+            public static final String SIGN_TEXT_4 = "Text4";
+        }
     }
 
     public static final class Catalog {
