@@ -47,6 +47,7 @@ import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.common.SpongeImpl;
+import org.spongepowered.common.data.AbstractLocatableSnapshotBuilder;
 import org.spongepowered.common.data.DataProcessor;
 import org.spongepowered.common.data.persistence.NbtTranslator;
 import org.spongepowered.common.data.util.DataUtil;
@@ -61,7 +62,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnapshot> implements EntitySnapshot.Builder {
+public class SpongeEntitySnapshotBuilder extends AbstractLocatableSnapshotBuilder<EntitySnapshot.Builder, EntitySnapshot> implements EntitySnapshot.Builder {
 
     UUID worldId;
     Vector3d position;
@@ -80,18 +81,7 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
     }
 
     @Override
-    public SpongeEntitySnapshotBuilder world(WorldProperties worldProperties) {
-        this.worldId = checkNotNull(worldProperties).getUniqueId();
-        return this;
-    }
-
-    public SpongeEntitySnapshotBuilder worldId(UUID worldUuid) {
-        this.worldId = checkNotNull(worldUuid);
-        return this;
-    }
-
-    @Override
-    public SpongeEntitySnapshotBuilder type(EntityType entityType) {
+    public SpongeEntitySnapshotBuilder type(final EntityType entityType) {
         this.entityType = checkNotNull(entityType);
         this.compound = null;
         this.manipulators = null;
@@ -100,28 +90,28 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
     }
 
     @Override
-    public SpongeEntitySnapshotBuilder position(Vector3d position) {
+    public SpongeEntitySnapshotBuilder position(final Vector3d position) {
         this.position = checkNotNull(position);
         return this;
     }
 
-    public SpongeEntitySnapshotBuilder rotation(Vector3d rotation) {
+    public SpongeEntitySnapshotBuilder rotation(final Vector3d rotation) {
         this.rotation = checkNotNull(rotation);
         return this;
     }
 
-    public SpongeEntitySnapshotBuilder scale(Vector3d scale) {
+    public SpongeEntitySnapshotBuilder scale(final Vector3d scale) {
         this.scale = checkNotNull(scale);
         return this;
     }
 
-    public SpongeEntitySnapshotBuilder id(UUID entityId) {
+    public SpongeEntitySnapshotBuilder id(final UUID entityId) {
         this.entityId = checkNotNull(entityId);
         return this;
     }
 
     @Override
-    public SpongeEntitySnapshotBuilder from(Entity entity) {
+    public SpongeEntitySnapshotBuilder from(final Entity entity) {
         reset();
         this.entityReference = new WeakReference<>(entity);
         this.worldId = entity.getWorld().getUniqueId();
@@ -131,7 +121,7 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
         this.entityType = entity.getType();
         this.entityId = entity.getUniqueId();
         this.manipulators = Lists.newArrayList();
-        for (DataManipulator<?, ?> manipulator : ((CustomDataHolderBridge) entity).bridge$getCustomManipulators()) {
+        for (final DataManipulator<?, ?> manipulator : ((CustomDataHolderBridge) entity).bridge$getCustomManipulators()) {
             addManipulator(manipulator.asImmutable());
         }
         this.compound = new NBTTagCompound();
@@ -139,57 +129,9 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
         return this;
     }
 
-    @Override
-    public SpongeEntitySnapshotBuilder add(DataManipulator<?, ?> manipulator) {
-        checkState(this.entityType != null, "Must have a valid entity type before applying data!");
-        return add(manipulator.asImmutable());
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @Override
-    public SpongeEntitySnapshotBuilder add(ImmutableDataManipulator<?, ?> manipulator) {
-        checkState(this.entityType != null, "Must have a valid entity type before applying data!");
-        final Optional<DataProcessor<?, ?>> optional = DataUtil.getImmutableProcessor((Class) manipulator.getClass());
-        if (optional.isPresent()) {
-            if (optional.get().supports(this.entityType)) {
-                addManipulator(manipulator);
-            } else {
-                return this;
-            }
-        }
-        return this;
-    }
 
     @Override
-    public <V> EntitySnapshot.Builder add(Key<? extends BaseValue<V>> key, V value) {
-        checkNotNull(key, "key");
-        checkState(this.entityType != null, "Must have a valid entity type before applying data!");
-        if (this.values == null) {
-            this.values = Lists.newArrayList();
-        }
-        this.values.add(new ImmutableSpongeValue<>(key, value));
-        return this;
-    }
-
-    private void addManipulator(ImmutableDataManipulator<?, ?> manipulator) {
-        if (this.manipulators == null) {
-            this.manipulators = Lists.newArrayList();
-        }
-        int replaceIndex = -1;
-        for (ImmutableDataManipulator<?, ?> existing : this.manipulators) {
-            replaceIndex++;
-            if (existing.getClass().equals(manipulator.getClass())) {
-                break;
-            }
-        }
-        if (replaceIndex != -1) {
-            this.manipulators.remove(replaceIndex);
-        }
-        this.manipulators.add(manipulator);
-    }
-
-    @Override
-    public SpongeEntitySnapshotBuilder from(EntitySnapshot holder) {
+    public SpongeEntitySnapshotBuilder from(final EntitySnapshot holder) {
         this.entityType = holder.getType();
         this.worldId = holder.getWorldUniqueId();
         if (holder.getUniqueId().isPresent()) {
@@ -203,7 +145,7 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
             this.scale = optional.get().getScale();
         }
         this.manipulators = Lists.newArrayList();
-        for (ImmutableDataManipulator<?, ?> manipulator : holder.getContainers()) {
+        for (final ImmutableDataManipulator<?, ?> manipulator : holder.getContainers()) {
             add(manipulator);
         }
         if (holder instanceof SpongeEntitySnapshot) {
@@ -212,7 +154,7 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
         return this;
     }
 
-    public SpongeEntitySnapshotBuilder from(net.minecraft.entity.Entity minecraftEntity) {
+    public SpongeEntitySnapshotBuilder from(final net.minecraft.entity.Entity minecraftEntity) {
         this.entityType = ((Entity) minecraftEntity).getType();
         this.worldId = ((Entity) minecraftEntity).getWorld().getUniqueId();
         this.entityId = minecraftEntity.getUniqueID();
@@ -221,7 +163,7 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
         this.rotation = transform.getRotation();
         this.scale = transform.getScale();
         this.manipulators = Lists.newArrayList();
-        for (DataManipulator<?, ?> manipulator : ((CustomDataHolderBridge) minecraftEntity).bridge$getCustomManipulators()) {
+        for (final DataManipulator<?, ?> manipulator : ((CustomDataHolderBridge) minecraftEntity).bridge$getCustomManipulators()) {
             addManipulator(manipulator.asImmutable());
         }
         this.compound = new NBTTagCompound();
@@ -229,7 +171,7 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
         return this;
     }
 
-    public SpongeEntitySnapshotBuilder unsafeCompound(NBTTagCompound compound) {
+    public SpongeEntitySnapshotBuilder unsafeCompound(final NBTTagCompound compound) {
         this.compound = checkNotNull(compound).copy();
         return this;
     }
@@ -258,7 +200,7 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
         checkNotNull(this.entityType);
         EntitySnapshot snapshot = new SpongeEntitySnapshot(this);
         if(this.values != null) {
-            for (ImmutableValue<?> value : this.values) {
+            for (final ImmutableValue<?> value : this.values) {
                 snapshot = snapshot.with(value).orElse(snapshot);
             }
         }
@@ -266,7 +208,7 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
     }
 
     @Override
-    protected Optional<EntitySnapshot> buildContent(DataView container) throws InvalidDataException {
+    protected Optional<EntitySnapshot> buildContent(final DataView container) throws InvalidDataException {
         if (!container.contains(Queries.WORLD_ID, Constants.Entity.TYPE, Constants.Entity.ROTATION, Constants.Entity.SCALE, Constants.Sponge.SNAPSHOT_WORLD_POSITION)) {
             return Optional.empty();
         }
@@ -290,4 +232,5 @@ public class SpongeEntitySnapshotBuilder extends AbstractDataBuilder<EntitySnaps
         }
         return Optional.of(build());
     }
+
 }

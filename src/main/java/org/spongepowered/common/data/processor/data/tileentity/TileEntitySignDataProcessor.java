@@ -59,7 +59,7 @@ public class TileEntitySignDataProcessor
     }
 
     @Override
-    protected Optional<List<Text>> getVal(TileEntitySign sign) {
+    protected Optional<List<Text>> getVal(final TileEntitySign sign) {
         final ITextComponent[] rawLines = sign.signText;
         final List<Text> signLines = Lists.newArrayListWithExpectedSize(4);
         for (int i = 0; i < rawLines.length; i++) {
@@ -70,9 +70,9 @@ public class TileEntitySignDataProcessor
     }
 
     @Override
-    protected boolean set(TileEntitySign sign, List<Text> lines) {
+    protected boolean set(final TileEntitySign sign, final List<Text> lines) {
         for (int i = 0; i < sign.signText.length; i++) {
-            Text line = lines.size() > i ? lines.get(i) : Text.EMPTY;
+            final Text line = lines.size() > i ? lines.get(i) : Text.EMPTY;
             if (line == null) {
                 throw new IllegalArgumentException("A null line was given at index " + i);
             }
@@ -84,7 +84,7 @@ public class TileEntitySignDataProcessor
     }
 
     @Override
-    public Optional<SignData> fill(DataContainer container, SignData signData) {
+    public Optional<SignData> fill(final DataContainer container, final SignData signData) {
         if (!container.contains(Keys.SIGN_LINES.getQuery())) {
             return Optional.empty();
         }
@@ -102,17 +102,17 @@ public class TileEntitySignDataProcessor
     }
 
     @Override
-    public DataTransactionResult removeFrom(ValueContainer<?> container) {
+    public DataTransactionResult removeFrom(final ValueContainer<?> container) {
         return DataTransactionResult.failNoData();
     }
 
     @Override
-    public ListValue<Text> constructValue(List<Text> defaultValue) {
+    public ListValue<Text> constructValue(final List<Text> defaultValue) {
         return new SpongeListValue<>(Keys.SIGN_LINES, defaultValue);
     }
 
     @Override
-    protected ImmutableValue<List<Text>> constructImmutableValue(List<Text> value) {
+    protected ImmutableValue<List<Text>> constructImmutableValue(final List<Text> value) {
         return new ImmutableSpongeListValue<>(Keys.SIGN_LINES, ImmutableList.copyOf(value));
     }
 

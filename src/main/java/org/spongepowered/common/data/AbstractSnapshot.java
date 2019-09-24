@@ -36,15 +36,10 @@ import org.spongepowered.api.data.value.immutable.ImmutableValue;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
-public abstract class ProcessorBackedSnapshot<T extends LocatableSnapshot<T>> implements LocatableSnapshot<T> {
-
+public class AbstractSnapshot<S extends LocatableSnapshot<S>> implements LocatableSnapshot<S> {
     @Override
     public UUID getWorldUniqueId() {
         return null;
@@ -61,7 +56,7 @@ public abstract class ProcessorBackedSnapshot<T extends LocatableSnapshot<T>> im
     }
 
     @Override
-    public T withLocation(Location<World> location) {
+    public S withLocation(Location<World> location) {
         return null;
     }
 
@@ -91,12 +86,12 @@ public abstract class ProcessorBackedSnapshot<T extends LocatableSnapshot<T>> im
     }
 
     @Override
-    public <T1 extends ImmutableDataManipulator<?, ?>> Optional<T1> get(Class<T1> containerClass) {
+    public <T extends ImmutableDataManipulator<?, ?>> Optional<T> get(Class<T> containerClass) {
         return Optional.empty();
     }
 
     @Override
-    public <T1 extends ImmutableDataManipulator<?, ?>> Optional<T1> getOrCreate(Class<T1> containerClass) {
+    public <T extends ImmutableDataManipulator<?, ?>> Optional<T> getOrCreate(Class<T> containerClass) {
         return Optional.empty();
     }
 
@@ -106,42 +101,42 @@ public abstract class ProcessorBackedSnapshot<T extends LocatableSnapshot<T>> im
     }
 
     @Override
-    public <E> Optional<T> transform(Key<? extends BaseValue<E>> key, Function<E, E> function) {
+    public <E> Optional<S> transform(Key<? extends BaseValue<E>> key, Function<E, E> function) {
         return Optional.empty();
     }
 
     @Override
-    public <E> Optional<T> with(Key<? extends BaseValue<E>> key, E value) {
+    public <E> Optional<S> with(Key<? extends BaseValue<E>> key, E value) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<T> with(BaseValue<?> value) {
+    public Optional<S> with(BaseValue<?> value) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<T> with(ImmutableDataManipulator<?, ?> valueContainer) {
+    public Optional<S> with(ImmutableDataManipulator<?, ?> valueContainer) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<T> with(Iterable<ImmutableDataManipulator<?, ?>> valueContainers) {
+    public Optional<S> with(Iterable<ImmutableDataManipulator<?, ?>> valueContainers) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<T> without(Class<? extends ImmutableDataManipulator<?, ?>> containerClass) {
+    public Optional<S> without(Class<? extends ImmutableDataManipulator<?, ?>> containerClass) {
         return Optional.empty();
     }
 
     @Override
-    public T merge(T that) {
+    public S merge(S that) {
         return null;
     }
 
     @Override
-    public T merge(T that, MergeFunction function) {
+    public S merge(S that, MergeFunction function) {
         return null;
     }
 
@@ -166,7 +161,7 @@ public abstract class ProcessorBackedSnapshot<T extends LocatableSnapshot<T>> im
     }
 
     @Override
-    public T copy() {
+    public S copy() {
         return null;
     }
 

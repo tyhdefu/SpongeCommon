@@ -51,6 +51,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.common.bridge.data.CustomDataHolderBridge;
+import org.spongepowered.common.data.AbstractLocatableSnapshotBuilder;
 import org.spongepowered.common.data.persistence.NbtTranslator;
 import org.spongepowered.common.data.util.DataUtil;
 import org.spongepowered.common.util.Constants;
@@ -66,7 +67,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-public class SpongeBlockSnapshotBuilder extends AbstractDataBuilder<BlockSnapshot> implements BlockSnapshot.Builder {
+public class SpongeBlockSnapshotBuilder extends AbstractLocatableSnapshotBuilder<BlockSnapshot.Builder, BlockSnapshot> implements BlockSnapshot.Builder {
 
     private static final Deque<SpongeBlockSnapshotBuilder> pool = new ConcurrentLinkedDeque<>();
 
@@ -100,17 +101,6 @@ public class SpongeBlockSnapshotBuilder extends AbstractDataBuilder<BlockSnapsho
     }
 
     @Override
-    public SpongeBlockSnapshotBuilder world(final WorldProperties worldProperties) {
-        this.worldUuid = checkNotNull(worldProperties).getUniqueId();
-        return this;
-    }
-
-    public SpongeBlockSnapshotBuilder worldId(final UUID worldUuid) {
-        this.worldUuid = checkNotNull(worldUuid);
-        return this;
-    }
-
-    @Override
     public SpongeBlockSnapshotBuilder blockState(final BlockState blockState) {
         this.blockState = checkNotNull(blockState);
         return this;
@@ -125,7 +115,6 @@ public class SpongeBlockSnapshotBuilder extends AbstractDataBuilder<BlockSnapsho
         this.extendedState = checkNotNull(extendedState);
         return this;
     }
-
 
     public SpongeBlockSnapshotBuilder extendedState(final IBlockState extended) {
         this.extendedState = checkNotNull((BlockState) extended);
@@ -161,18 +150,6 @@ public class SpongeBlockSnapshotBuilder extends AbstractDataBuilder<BlockSnapsho
         return this;
     }
 
-    @Override
-    public SpongeBlockSnapshotBuilder creator(final UUID uuid) {
-        this.creatorUuid = uuid;
-        return this;
-    }
-
-    @Override
-    public SpongeBlockSnapshotBuilder notifier(final UUID uuid) {
-        this.notifierUuid = uuid;
-        return this;
-    }
-
     public SpongeBlockSnapshotBuilder unsafeNbt(final NBTTagCompound compound) {
         this.compound = compound.copy();
         return this;
@@ -203,11 +180,19 @@ public class SpongeBlockSnapshotBuilder extends AbstractDataBuilder<BlockSnapsho
     public <V> SpongeBlockSnapshotBuilder add(final Key<? extends BaseValue<V>> key, final V value) {
         checkNotNull(key, "key");
         checkState(this.blockState != null);
-        this.blockState = this.blockState.with(key, value).orElse(this.blockState);
-        if(this.extendedState != null) {
-            this.extendedState = this.extendedState.with(key, value).orElse(this.extendedState);
+        final Optional<BlockState> with = this.blockState.with(key, value);
+        if (with.isPresent()) {
+            this.blockState = with.get();
+            return this;
         }
-        return this;
+        if(this.extendedState != null && this.extendedState != this.blockState) {
+            final Optional<BlockState> extended = this.extendedState.with(key, value);
+            if (extended.isPresent()) {
+                this.extendedState = extended.get();
+                return this;
+            }
+        }
+        return (SpongeBlockSnapshotBuilder) super.add(key, value);
     }
 
     public SpongeBlockSnapshotBuilder flag(final BlockChangeFlag flag) {

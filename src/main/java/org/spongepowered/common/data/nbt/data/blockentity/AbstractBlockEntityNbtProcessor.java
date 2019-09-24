@@ -22,15 +22,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.data.nbt;
+package org.spongepowered.common.data.nbt.data.blockentity;
 
-import net.minecraft.util.datafix.IFixType;
-import org.spongepowered.api.CatalogType;
+import org.spongepowered.api.data.manipulator.DataManipulator;
+import org.spongepowered.api.data.manipulator.ImmutableDataManipulator;
+import org.spongepowered.common.data.nbt.AbstractSpongeNbtProcessor;
+import org.spongepowered.common.data.nbt.NbtDataType;
+import org.spongepowered.common.data.nbt.NbtDataTypes;
 
-public interface NbtDataType extends CatalogType {
+public abstract class AbstractBlockEntityNbtProcessor<T extends DataManipulator<T, I>, I extends ImmutableDataManipulator<I, T>> extends AbstractSpongeNbtProcessor<T, I> {
 
-    boolean matches(IFixType fixType);
-
-    boolean worksWith(CatalogType type);
-
+    protected AbstractBlockEntityNbtProcessor() {
+        super(NbtDataTypes.TILE_ENTITY);
+    }
 }

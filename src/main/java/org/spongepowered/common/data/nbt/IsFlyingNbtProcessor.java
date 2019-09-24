@@ -44,12 +44,12 @@ public class IsFlyingNbtProcessor extends AbstractSpongeNbtProcessor<FlyingData,
     }
 
     @Override
-    public boolean isCompatible(NBTTagCompound nbtDataType) {
+    public boolean isCompatible(final NBTTagCompound nbtDataType) {
         return false;
     }
 
     @Override
-    public Optional<FlyingData> readFrom(NBTTagCompound compound) {
+    public Optional<FlyingData> readFrom(final NBTTagCompound compound) {
         final NBTBase tag = compound.getTag(Constants.Entity.Player.IS_FLYING);
         if (tag != null) {
             return Optional.of(new SpongeFlyingData(((NBTTagByte) tag).getByte() != 0));
@@ -58,13 +58,13 @@ public class IsFlyingNbtProcessor extends AbstractSpongeNbtProcessor<FlyingData,
     }
 
     @Override
-    public Optional<NBTTagCompound> storeToCompound(NBTTagCompound compound, FlyingData manipulator) {
+    public Optional<NBTTagCompound> storeToCompound(final NBTTagCompound compound, final FlyingData manipulator) {
         compound.setBoolean(Constants.Entity.Player.IS_FLYING, manipulator.flying().get());
         return Optional.of(compound);
     }
 
     @Override
-    public DataTransactionResult remove(NBTTagCompound data) {
+    public DataTransactionResult remove(final NBTTagCompound data) {
         return null;
     }
 
