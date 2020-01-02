@@ -40,13 +40,16 @@ public final class MultiWorldTest implements LoadableModule {
 
     @Override
     public void disable(CommandSource src) {
-        Sponge.getServer().getWorld("temp").ifPresent(world -> Sponge.getServer().unloadWorld(world));
+        Sponge.getServer().getWorld("temp").ifPresent(world -> {
+            Sponge.getServer().unloadWorld(world);
+            Sponge.getServer().deleteWorld(world.getProperties());
+        });
     }
 
     @Override
     public void enable(CommandSource src) {
         try {
-            final WorldArchetype archetype = Sponge.getRegistry().getType(WorldArchetype.class, "multi-world-test:overnether").orElse(
+            final WorldArchetype archetype = Sponge.getRegistry().getType(WorldArchetype.class, "multi-world-test:overnether").orElseGet(() ->
                 WorldArchetype.builder().
                     from(WorldArchetypes.THE_NETHER)
                     .serializationBehavior(SerializationBehaviors.NONE)

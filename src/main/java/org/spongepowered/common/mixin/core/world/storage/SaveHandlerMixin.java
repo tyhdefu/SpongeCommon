@@ -31,7 +31,10 @@ import net.minecraft.util.datafix.FixTypes;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
+import org.spongepowered.api.world.SerializationBehaviors;
+import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -47,10 +50,12 @@ import org.spongepowered.common.bridge.world.WorldInfoBridge;
 import org.spongepowered.common.bridge.world.storage.SaveHandlerBridge;
 import org.spongepowered.common.data.util.DataUtil;
 import org.spongepowered.common.util.Constants;
+import org.spongepowered.common.world.WorldManager;
 import org.spongepowered.common.world.storage.SpongePlayerDataHandler;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +64,9 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -70,9 +77,45 @@ public abstract class SaveHandlerMixin implements SaveHandlerBridge {
 
     @Shadow @Final private File worldDirectory;
 
+    @Shadow protected abstract void setSessionLock();
+
     @Nullable private Exception impl$capturedException;
     // player join stuff
     @Nullable private Path impl$file;
+    private Set<File> impl$directoriesToCreate = new HashSet<>();
+
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Ljava/io/File;mkdirs()Z", remap = false))
+    private boolean impl$mkdirs(File dir) {
+        if (WorldManager.NO_FILE_CREATION) {
+            impl$directoriesToCreate.add(dir);
+            return false;
+        }
+        return dir.mkdirs();
+    }
+
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/SaveHandler;setSessionLock()V"))
+    private void impl$onSetSessionLock(SaveHandler self) {
+        if (!WorldManager.NO_FILE_CREATION) {
+            this.setSessionLock();
+        }
+    }
+
+    @Redirect(method = "checkSessionLock",
+        at = @At(value = "NEW", target = "java/io/FileInputStream", remap = false))
+    private FileInputStream impl$onCheckSessionLock(File file) throws FileNotFoundException {
+        if (!file.exists()) {
+            WorldProperties props = Sponge.getServer().getWorldProperties(this.worldDirectory.getName()).get();
+            if (props.getSerializationBehavior() == SerializationBehaviors.NONE) {
+                throw new IllegalStateException("Should not be saving with SerializationBehaviors.NONE");
+            }
+            for (File dir : this.impl$directoriesToCreate) {
+                dir.mkdirs();
+            }
+            this.impl$directoriesToCreate.clear();
+            setSessionLock();
+        }
+        return new FileInputStream(file);
+    }
 
     @ModifyArg(method = "checkSessionLock",
         at = @At(value = "INVOKE", target = "Lnet/minecraft/world/MinecraftException;<init>(Ljava/lang/String;)V", ordinal = 0, remap = false))

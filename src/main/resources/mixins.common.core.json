@@ -22,6 +22,7 @@
         "advancements.CriterionMixin",
         "advancements.CriterionProgressMixin",
         "advancements.DisplayInfoMixin",
+        "advancements.FunctionManagerMixin",
         "advancements.ICriterionTrigger_ListenerMixin",
         "advancements.ICriterionTriggerMixin",
         "advancements.PlayerAdvancementsMixin",
