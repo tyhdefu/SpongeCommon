@@ -34,7 +34,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.gen.IChunkGenerator;
-import net.minecraft.world.storage.DerivedWorldInfo;
+import org.spongepowered.api.world.SerializationBehavior;
 import org.spongepowered.api.world.SerializationBehaviors;
 import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.asm.mixin.Final;
@@ -253,6 +253,13 @@ public abstract class ChunkProviderServerMixin implements ChunkProviderServerBri
     @Overwrite
     public boolean tick()
     {
+        // Sponge start
+        SerializationBehavior serializationBehavior = ((WorldProperties) this.world.getWorldInfo()).getSerializationBehavior();
+        if (serializationBehavior != SerializationBehaviors.AUTOMATIC) {
+            return false;
+        }
+        // Sponge end
+
         if (this.canSave() && !((WorldBridge) this.world).bridge$isFake())
         {
             ((WorldServerBridge) this.world).bridge$getTimingsHandler().doChunkUnload.startTiming();
@@ -329,10 +336,19 @@ public abstract class ChunkProviderServerMixin implements ChunkProviderServerBri
         ((ChunkBridge) chunk).bridge$setScheduledForUnload(-1);
     }
 
+    // This still returns true for METADATA_ONLY because other places (e.g. WorldServer) use it.
     @Inject(method = "canSave", at = @At("HEAD"), cancellable = true)
     public void onCanSave(CallbackInfoReturnable<Boolean> cir) {
         if (((WorldProperties) this.world.getWorldInfo()).getSerializationBehavior() == SerializationBehaviors.NONE) {
             cir.setReturnValue(false);
+        }
+    }
+
+    @Inject(method = "saveChunks", at = @At("HEAD"), cancellable = true)
+    public void onSaveChunks(CallbackInfoReturnable<Boolean> cir) {
+        SerializationBehavior serializationBehavior = ((WorldProperties) this.world.getWorldInfo()).getSerializationBehavior();
+        if (serializationBehavior == SerializationBehaviors.NONE || serializationBehavior == SerializationBehaviors.METADATA_ONLY) {
+            cir.setReturnValue(true);
         }
     }
 }

@@ -405,7 +405,7 @@ public abstract class MinecraftServerMixin implements SubjectBridge, CommandSour
             return;
         }
         for (final WorldServer world : this.worlds) {
-            final boolean save = world.getChunkProvider().canSave() && ((WorldProperties) world.getWorldInfo()).getSerializationBehavior() != SerializationBehaviors.NONE;
+            final boolean save = world.getChunkProvider().canSave(); // ChunkProviderServerMixin handles the SerializationBehavior check
             boolean log = !dontLog;
 
             if (save) {

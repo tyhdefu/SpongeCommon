@@ -505,6 +505,7 @@
         "world.chunk.storage.AnvilChunkLoaderMixin",
         "world.chunk.storage.AnvilSaveHandlerMixin",
         "world.chunk.storage.RegionFileCacheAccessor",
+        "world.chunk.storage.RegionFileCacheMixin",
         "world.end.DragonFightManagerAccessor",
         "world.end.DragonFightManagerMixin",
         "world.gen.ChunkGeneratorEndMixin",
