@@ -70,7 +70,9 @@ public interface ContainerBridge {
 
     void bridge$setFirePreview(boolean firePreview);
 
-    List<SlotTransaction> bridge$getPreviewTransactions();
+    @Nullable SlotTransaction bridge$getPreviewTransaction();
+
+    void bridge$setPreviewTransaction(@Nullable SlotTransaction transaction);
 
     @Nullable Location<World> bridge$getOpenLocation();
 
