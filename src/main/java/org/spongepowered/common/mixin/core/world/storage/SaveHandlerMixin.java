@@ -49,6 +49,8 @@ import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.bridge.world.WorldInfoBridge;
 import org.spongepowered.common.bridge.world.storage.SaveHandlerBridge;
 import org.spongepowered.common.data.util.DataUtil;
+import org.spongepowered.common.event.tracking.IPhaseState;
+import org.spongepowered.common.event.tracking.PhaseTracker;
 import org.spongepowered.common.util.Constants;
 import org.spongepowered.common.world.WorldManager;
 import org.spongepowered.common.world.storage.SpongePlayerDataHandler;
@@ -77,7 +79,7 @@ public abstract class SaveHandlerMixin implements SaveHandlerBridge {
 
     @Shadow @Final private File worldDirectory;
 
-    @Shadow protected abstract void setSessionLock();
+    @Shadow protected abstract void shadow$setSessionLock();
 
     @Nullable private Exception impl$capturedException;
     // player join stuff
@@ -85,8 +87,10 @@ public abstract class SaveHandlerMixin implements SaveHandlerBridge {
     private Set<File> impl$directoriesToCreate = new HashSet<>();
 
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Ljava/io/File;mkdirs()Z", remap = false))
-    private boolean impl$mkdirs(File dir) {
-        if (WorldManager.NO_FILE_CREATION) {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private boolean impl$createDirectoryIfSavingFiles(File dir) {
+        IPhaseState state = PhaseTracker.getInstance().getCurrentState();
+        if (!state.shouldCreateWorldDirectories(PhaseTracker.getInstance().getCurrentContext())) {
             impl$directoriesToCreate.add(dir);
             return false;
         }
@@ -94,15 +98,17 @@ public abstract class SaveHandlerMixin implements SaveHandlerBridge {
     }
 
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/storage/SaveHandler;setSessionLock()V"))
-    private void impl$onSetSessionLock(SaveHandler self) {
-        if (!WorldManager.NO_FILE_CREATION) {
-            this.setSessionLock();
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void impl$setSessionLockIfCreatingFiles(SaveHandler self) {
+        IPhaseState state = PhaseTracker.getInstance().getCurrentState();
+        if (state.shouldCreateWorldDirectories(PhaseTracker.getInstance().getCurrentContext())) {
+            this.shadow$setSessionLock();
         }
     }
 
     @Redirect(method = "checkSessionLock",
         at = @At(value = "NEW", target = "java/io/FileInputStream", remap = false))
-    private FileInputStream impl$onCheckSessionLock(File file) throws FileNotFoundException {
+    private FileInputStream impl$createSessionLockAndCreateDirectories(File file) throws FileNotFoundException {
         if (!file.exists()) {
             WorldProperties props = Sponge.getServer().getWorldProperties(this.worldDirectory.getName()).get();
             if (props.getSerializationBehavior() == SerializationBehaviors.NONE) {
@@ -112,7 +118,7 @@ public abstract class SaveHandlerMixin implements SaveHandlerBridge {
                 dir.mkdirs();
             }
             this.impl$directoriesToCreate.clear();
-            setSessionLock();
+            this.shadow$setSessionLock();
         }
         return new FileInputStream(file);
     }

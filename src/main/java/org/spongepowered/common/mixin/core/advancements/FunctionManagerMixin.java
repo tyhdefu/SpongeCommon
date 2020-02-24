@@ -48,7 +48,7 @@ public abstract class FunctionManagerMixin {
 
     @Redirect(method = "loadFunctions", at = @At(value = "INVOKE",
             target = "Lorg/apache/commons/io/FileUtils;listFiles(Ljava/io/File;[Ljava/lang/String;Z)Ljava/util/Collection;", remap = false))
-    private Collection<File> listFiles(File directory, String[] extensions, boolean recursive) {
+    private Collection<File> impl$listFilesIfDirectoryExists(File directory, String[] extensions, boolean recursive) {
         if (!directory.exists()) {
             return ImmutableSet.of();
         }

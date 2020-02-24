@@ -24,6 +24,7 @@
  */
 package org.spongepowered.test;
 
+import org.spongepowered.api.Server;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.plugin.Plugin;
@@ -40,38 +41,41 @@ public final class MultiWorldTest implements LoadableModule {
 
     @Override
     public void disable(CommandSource src) {
-        Sponge.getServer().getWorld("no-save").ifPresent(world -> {
-            Sponge.getServer().unloadWorld(world);
-            Sponge.getServer().deleteWorld(world.getProperties());
+        final Server server = Sponge.getServer();
+        server.getWorld("no-save").ifPresent(world -> {
+            server.unloadWorld(world);
+            server.deleteWorld(world.getProperties());
         });
-        Sponge.getServer().getWorld("metadata-only").ifPresent(world -> {
-            Sponge.getServer().unloadWorld(world);
-            Sponge.getServer().deleteWorld(world.getProperties());
+        server.getWorld("metadata-only").ifPresent(world -> {
+            server.unloadWorld(world);
+            server.deleteWorld(world.getProperties());
         });
     }
 
     @Override
     public void enable(CommandSource src) {
         try {
-            final WorldArchetype archetype1 = Sponge.getRegistry().getType(WorldArchetype.class, "multi-world-test:overnether").orElseGet(() ->
+            final Server server = Sponge.getServer();
+
+            final WorldArchetype archetypeNoSave = Sponge.getRegistry().getType(WorldArchetype.class, "multi-world-test:overnether").orElseGet(() ->
                 WorldArchetype.builder().
                     from(WorldArchetypes.THE_NETHER)
                     .serializationBehavior(SerializationBehaviors.NONE)
                     .generator(GeneratorTypes.OVERWORLD)
                     .build("multi-world-test:overnether", "Overnether")
             );
-            final WorldProperties world1 = Sponge.getServer().createWorldProperties("no-save", archetype1);
-            Sponge.getServer().loadWorld(world1);
+            final WorldProperties worldNoSave = server.createWorldProperties("no-save", archetypeNoSave);
+            server.loadWorld(worldNoSave);
 
-            final WorldArchetype archetype2 = Sponge.getRegistry().getType(WorldArchetype.class, "multi-world-test:overend").orElseGet(() ->
+            final WorldArchetype archetypeMetadataOnly = Sponge.getRegistry().getType(WorldArchetype.class, "multi-world-test:overend").orElseGet(() ->
                     WorldArchetype.builder().
                             from(WorldArchetypes.THE_END)
                             .serializationBehavior(SerializationBehaviors.METADATA_ONLY)
                             .generator(GeneratorTypes.OVERWORLD)
                             .build("multi-world-test:overend", "Overend")
             );
-            final WorldProperties world2 = Sponge.getServer().createWorldProperties("metadata-only", archetype2);
-            Sponge.getServer().loadWorld(world2);
+            final WorldProperties worldMetadataOnly = server.createWorldProperties("metadata-only", archetypeMetadataOnly);
+            server.loadWorld(worldMetadataOnly);
         } catch (IOException e) {
             e.printStackTrace();
         }

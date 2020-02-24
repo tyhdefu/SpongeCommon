@@ -93,7 +93,7 @@ public abstract class ChunkProviderServerMixin implements ChunkProviderServerBri
     @Shadow protected abstract void saveChunkExtraData(Chunk chunkIn);
     @Shadow protected abstract void saveChunkData(Chunk chunkIn);
 
-    @Shadow public abstract boolean canSave();
+    @Shadow public abstract boolean shadow$canSave();
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void impl$setUpCommonFields(
@@ -254,13 +254,13 @@ public abstract class ChunkProviderServerMixin implements ChunkProviderServerBri
     public boolean tick()
     {
         // Sponge start
-        SerializationBehavior serializationBehavior = ((WorldProperties) this.world.getWorldInfo()).getSerializationBehavior();
+        final SerializationBehavior serializationBehavior = ((WorldProperties) this.world.getWorldInfo()).getSerializationBehavior();
         if (serializationBehavior != SerializationBehaviors.AUTOMATIC) {
             return false;
         }
         // Sponge end
 
-        if (this.canSave() && !((WorldBridge) this.world).bridge$isFake())
+        if (this.shadow$canSave() && !((WorldBridge) this.world).bridge$isFake())
         {
             ((WorldServerBridge) this.world).bridge$getTimingsHandler().doChunkUnload.startTiming();
             final Iterator<Chunk> iterator = this.loadedChunks.values().iterator();
@@ -338,14 +338,14 @@ public abstract class ChunkProviderServerMixin implements ChunkProviderServerBri
 
     // This still returns true for METADATA_ONLY because other places (e.g. WorldServer) use it.
     @Inject(method = "canSave", at = @At("HEAD"), cancellable = true)
-    public void onCanSave(CallbackInfoReturnable<Boolean> cir) {
+    public void impl$checkSerializationBehaviorForCanSave(CallbackInfoReturnable<Boolean> cir) {
         if (((WorldProperties) this.world.getWorldInfo()).getSerializationBehavior() == SerializationBehaviors.NONE) {
             cir.setReturnValue(false);
         }
     }
 
     @Inject(method = "saveChunks", at = @At("HEAD"), cancellable = true)
-    public void onSaveChunks(CallbackInfoReturnable<Boolean> cir) {
+    public void impl$checkSerializationBehaviorForSaveChunks(CallbackInfoReturnable<Boolean> cir) {
         SerializationBehavior serializationBehavior = ((WorldProperties) this.world.getWorldInfo()).getSerializationBehavior();
         if (serializationBehavior == SerializationBehaviors.NONE || serializationBehavior == SerializationBehaviors.METADATA_ONLY) {
             cir.setReturnValue(true);
