@@ -25,17 +25,20 @@
 package org.spongepowered.common.data.provider.entity.horse;
 
 import net.minecraft.entity.passive.horse.HorseEntity;
+import net.minecraft.util.registry.Registry;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.type.HorseColor;
+import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.data.provider.GenericMutableDataProvider;
 import org.spongepowered.common.data.type.SpongeHorseColor;
-import org.spongepowered.common.data.type.SpongeHorseStyle;
-import org.spongepowered.common.registry.type.entity.HorseColorRegistryModule;
-import org.spongepowered.common.registry.type.entity.HorseStyleRegistryModule;
+import org.spongepowered.common.util.lazy.Lazy;
 
 import java.util.Optional;
 
 public class HorseEntityHorseColorProvider extends GenericMutableDataProvider<HorseEntity, HorseColor> {
+
+    private final Lazy<Registry<HorseColor>> registry = Lazy.unsafeOf(
+            () -> SpongeImpl.getRegistry().getCatalogRegistry().requireRegistry(HorseColor.class));
 
     public HorseEntityHorseColorProvider() {
         super(Keys.HORSE_COLOR);
@@ -43,13 +46,15 @@ public class HorseEntityHorseColorProvider extends GenericMutableDataProvider<Ho
 
     @Override
     protected Optional<HorseColor> getFrom(HorseEntity dataHolder) {
-        return Optional.of(HorseColorRegistryModule.getHorseColor(dataHolder));
+        final int metadata = dataHolder.getHorseVariant() & 0xff;
+        return Optional.ofNullable(this.registry.get().getByValue(metadata));
     }
 
     @Override
     protected boolean set(HorseEntity dataHolder, HorseColor value) {
-        final SpongeHorseStyle style = (SpongeHorseStyle) HorseStyleRegistryModule.getHorseStyle(dataHolder);
-        dataHolder.setHorseVariant(((SpongeHorseColor) value).getBitMask() | style.getBitMask());
+        final int variant = dataHolder.getHorseVariant();
+        final int metadata = ((SpongeHorseColor) value).getMetadata();
+        dataHolder.setHorseVariant((variant & ~0xff) | metadata);
         return true;
     }
 }

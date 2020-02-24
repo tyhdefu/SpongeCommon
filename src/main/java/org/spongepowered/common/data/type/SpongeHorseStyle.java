@@ -32,8 +32,4 @@ public final class SpongeHorseStyle extends SpongeEntityMetadataType<Integer> im
     public SpongeHorseStyle(CatalogKey key, int metadata) {
         super(key, metadata);
     }
-
-    public int getBitMask() {
-        return this.getMetadata() << 8;
-    }
 }

@@ -24,6 +24,7 @@
  */
 package org.spongepowered.common.data.provider;
 
+import com.google.common.base.MoreObjects;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataProvider;
 import org.spongepowered.api.data.Key;
@@ -45,6 +46,13 @@ public abstract class AbstractDataProvider<V extends Value<E>, E> implements Dat
     @Override
     public boolean allowsAsynchronousAccess(DataHolder dataHolder) {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("key", this.key)
+                .toString();
     }
 
     interface KnownHolderType {

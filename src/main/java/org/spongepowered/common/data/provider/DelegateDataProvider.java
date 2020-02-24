@@ -52,11 +52,17 @@ class DelegateDataProvider<V extends Value<E>, E> implements DataProvider<V, E> 
     public boolean allowsAsynchronousAccess(DataHolder dataHolder) {
         return this.providers.stream().allMatch(provider -> provider.allowsAsynchronousAccess(dataHolder));
     }
-
+    
     @Override
     public Optional<E> get(DataHolder dataHolder) {
         return this.providers.stream()
-                .map(provider -> provider.get(dataHolder))
+                .map(provider -> {
+                    if (provider instanceof GenericMutableDataProviderBase) {
+                        return ((GenericMutableDataProviderBase<DataHolder, ?, E>) provider).getFrom(dataHolder);
+                    } else {
+                        return provider.get(dataHolder);
+                    }
+                })
                 .filter(Optional::isPresent)
                 .findFirst().flatMap(optional -> optional);
     }

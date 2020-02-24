@@ -22,29 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.data.value;
+package org.spongepowered.common.util.lazy;
 
-import org.spongepowered.api.data.value.Value;
+import java.util.function.Supplier;
 
-final class CachedBooleanValueConstructor implements ValueConstructor<Value<Boolean>, Boolean> {
+@SuppressWarnings("unchecked")
+final class UnsafeLazy<T> extends Lazy<T> {
 
-    private final ValueConstructor<Value<Boolean>, Boolean> original;
-    private final Value<Boolean> immutableValueTrue;
-    private final Value<Boolean> immutableValueFalse;
+    private static final Object UNINITIALIZED = new Object();
 
-    CachedBooleanValueConstructor(ValueConstructor<Value<Boolean>, Boolean> original) {
-        this.original = original;
-        this.immutableValueFalse = original.getImmutable(false);
-        this.immutableValueTrue = original.getImmutable(true);
+    private Supplier<T> initializer;
+    private Object value = UNINITIALIZED;
+
+    UnsafeLazy(Supplier<T> initializer) {
+        this.initializer = initializer;
     }
 
     @Override
-    public Value<Boolean> getMutable(Boolean element) {
-        return this.original.getMutable(element);
-    }
-
-    @Override
-    public Value<Boolean> getRawImmutable(Boolean element) {
-        return element ? this.immutableValueTrue : this.immutableValueFalse;
+    public T get() {
+        Object value = this.value;
+        if (value != UNINITIALIZED) {
+            return (T) value;
+        }
+        final Supplier<T> initializer = this.initializer;
+        if (initializer == null) {
+            throw new IllegalStateException("The initializer can't be null.");
+        }
+        value = initializer.get();
+        this.value = value;
+        this.initializer = null;
+        return (T) value;
     }
 }

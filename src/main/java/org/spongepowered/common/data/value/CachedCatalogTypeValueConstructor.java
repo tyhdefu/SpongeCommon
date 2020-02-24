@@ -24,27 +24,30 @@
  */
 package org.spongepowered.common.data.value;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.data.value.Value;
 
-final class CachedBooleanValueConstructor implements ValueConstructor<Value<Boolean>, Boolean> {
+public class CachedCatalogTypeValueConstructor<V extends Value<E>, E extends CatalogType> implements ValueConstructor<V, E> {
 
-    private final ValueConstructor<Value<Boolean>, Boolean> original;
-    private final Value<Boolean> immutableValueTrue;
-    private final Value<Boolean> immutableValueFalse;
+    private final ValueConstructor<V, E> original;
+    private final LoadingCache<E, V> immutableCache;
 
-    CachedBooleanValueConstructor(ValueConstructor<Value<Boolean>, Boolean> original) {
+    public CachedCatalogTypeValueConstructor(ValueConstructor<V, E> original) {
         this.original = original;
-        this.immutableValueFalse = original.getImmutable(false);
-        this.immutableValueTrue = original.getImmutable(true);
+        this.immutableCache = Caffeine.newBuilder().maximumSize(100)
+                .build(original::getRawImmutable);
     }
 
     @Override
-    public Value<Boolean> getMutable(Boolean element) {
+    public V getMutable(E element) {
         return this.original.getMutable(element);
     }
 
     @Override
-    public Value<Boolean> getRawImmutable(Boolean element) {
-        return element ? this.immutableValueTrue : this.immutableValueFalse;
+    public V getRawImmutable(E element) {
+        //noinspection ConstantConditions
+        return this.immutableCache.get(element);
     }
 }

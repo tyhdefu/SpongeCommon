@@ -22,29 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.data.value;
+package org.spongepowered.common.util.lazy;
 
-import org.spongepowered.api.data.value.Value;
+final class InitializedLazy<T> extends Lazy<T> {
 
-final class CachedBooleanValueConstructor implements ValueConstructor<Value<Boolean>, Boolean> {
+    private final T value;
 
-    private final ValueConstructor<Value<Boolean>, Boolean> original;
-    private final Value<Boolean> immutableValueTrue;
-    private final Value<Boolean> immutableValueFalse;
-
-    CachedBooleanValueConstructor(ValueConstructor<Value<Boolean>, Boolean> original) {
-        this.original = original;
-        this.immutableValueFalse = original.getImmutable(false);
-        this.immutableValueTrue = original.getImmutable(true);
+    InitializedLazy(T value) {
+        this.value = value;
     }
 
     @Override
-    public Value<Boolean> getMutable(Boolean element) {
-        return this.original.getMutable(element);
-    }
-
-    @Override
-    public Value<Boolean> getRawImmutable(Boolean element) {
-        return element ? this.immutableValueTrue : this.immutableValueFalse;
+    public T get() {
+        return this.value;
     }
 }

@@ -47,7 +47,7 @@ final class CachedEnumValueConstructor<V extends Value<E>, E extends Enum<E>> im
     }
 
     @Override
-    public V getImmutable(E element) {
+    public V getRawImmutable(E element) {
         return this.immutableValues[element.ordinal()];
     }
 }

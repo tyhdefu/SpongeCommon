@@ -25,17 +25,20 @@
 package org.spongepowered.common.data.provider.entity.horse;
 
 import net.minecraft.entity.passive.horse.HorseEntity;
+import net.minecraft.util.registry.Registry;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.data.type.HorseStyle;
+import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.data.provider.GenericMutableDataProvider;
-import org.spongepowered.common.data.type.SpongeHorseColor;
 import org.spongepowered.common.data.type.SpongeHorseStyle;
-import org.spongepowered.common.registry.type.entity.HorseColorRegistryModule;
-import org.spongepowered.common.registry.type.entity.HorseStyleRegistryModule;
+import org.spongepowered.common.util.lazy.Lazy;
 
 import java.util.Optional;
 
 public class HorseEntityHorseStyleProvider extends GenericMutableDataProvider<HorseEntity, HorseStyle> {
+
+    private final Lazy<Registry<HorseStyle>> registry = Lazy.unsafeOf(
+            () -> SpongeImpl.getRegistry().getCatalogRegistry().requireRegistry(HorseStyle.class));
 
     public HorseEntityHorseStyleProvider() {
         super(Keys.HORSE_STYLE);
@@ -43,13 +46,15 @@ public class HorseEntityHorseStyleProvider extends GenericMutableDataProvider<Ho
 
     @Override
     protected Optional<HorseStyle> getFrom(HorseEntity dataHolder) {
-        return Optional.of(HorseStyleRegistryModule.getHorseStyle(dataHolder));
+        final int metadata = (dataHolder.getHorseVariant() >> 8) & 0xff;
+        return Optional.ofNullable(this.registry.get().getByValue(metadata));
     }
 
     @Override
     protected boolean set(HorseEntity dataHolder, HorseStyle value) {
-        final SpongeHorseColor color = (SpongeHorseColor) HorseColorRegistryModule.getHorseColor(dataHolder);
-        dataHolder.setHorseVariant((color.getBitMask() | ((SpongeHorseStyle) value).getBitMask()));
+        final int variant = dataHolder.getHorseVariant();
+        final int metadata = ((SpongeHorseStyle) value).getMetadata();
+        dataHolder.setHorseVariant((variant & ~0xff00) | (metadata << 8));
         return true;
     }
 }

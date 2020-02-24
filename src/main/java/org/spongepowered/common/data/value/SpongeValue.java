@@ -29,6 +29,8 @@ import org.spongepowered.api.data.Key;
 import org.spongepowered.api.data.value.Value;
 import org.spongepowered.common.data.key.SpongeKey;
 
+import java.util.Objects;
+
 public abstract class SpongeValue<E> implements Value<E> {
 
     protected final SpongeKey<? extends Value<E>, E> key;
@@ -56,5 +58,23 @@ public abstract class SpongeValue<E> implements Value<E> {
                 .add("key", this.key)
                 .add("element", this.element)
                 .toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+        final SpongeValue<?> that = (SpongeValue<?>) o;
+        return this.key.equals(that.key) &&
+                this.element.equals(that.element);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.key, this.element);
     }
 }
