@@ -91,7 +91,7 @@ public abstract class SaveHandlerMixin implements SaveHandlerBridge {
     private boolean impl$createDirectoryIfSavingFiles(File dir) {
         IPhaseState state = PhaseTracker.getInstance().getCurrentState();
         if (!state.shouldCreateWorldDirectories(PhaseTracker.getInstance().getCurrentContext())) {
-            impl$directoriesToCreate.add(dir);
+            this.impl$directoriesToCreate.add(dir);
             return false;
         }
         return dir.mkdirs();
