@@ -43,14 +43,17 @@ public abstract class RegionFileCacheMixin {
     /**
      * @author JBYoshi
      * @reason Support for ChunkSerializationBehaviors that don't save chunks:
-     * don't create files if they aren't necessary. (The original method
-     * already returns null if the chunk doesn't exist.)
+     * uses getRegionFileIfExists instead of createOrLoadRegionFile to avoid
+     * creating new files.
      */
     @Overwrite
     public static DataInputStream getChunkInputStream(File worldDir, int chunkX, int chunkZ) {
         // Sponge start
+        // Use getRegionFileIfExists instead of createOrLoadRegionFile
         RegionFile regionfile = getRegionFileIfExists(worldDir, chunkX, chunkZ);
         if (regionfile == null) {
+            // Returning null here is acceptable: getChunkDataInputStream()
+            // already returns null if the file does not exist.
             return null;
         }
         // Sponge end
