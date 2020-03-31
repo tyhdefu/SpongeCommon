@@ -25,36 +25,19 @@
 package org.spongepowered.common.mixin.core.tileentity;
 
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
 
-import javax.annotation.Nullable;
+@Mixin(targets = "net.minecraft.tileentity.CommandBlockTileEntity$1")
+public abstract class CommandBlockTileEntity_1Mixin implements CommandSourceProviderBridge {
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
-
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
-
-    @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
-    }
-
-    @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
+    @Shadow public abstract CommandSource getCommandSource();
 
     @Override
     public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+        return this.getCommandSource();
     }
 
 }

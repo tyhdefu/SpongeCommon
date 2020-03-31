@@ -22,39 +22,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.mixin.accessor.command;
 
+import com.mojang.brigadier.ResultConsumer;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
+import net.minecraft.command.ICommandSource;
+import net.minecraft.command.arguments.EntityAnchorArgument;
+import net.minecraft.entity.Entity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.server.ServerWorld;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-import javax.annotation.Nullable;
+@Mixin(CommandSource.class)
+public interface CommandSourceAccessor {
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
-
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
-
-    @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
-    }
-
-    @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
-
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+    @Invoker("<init>")
+    static CommandSource accessor$createInstance(
+            ICommandSource commandSource,
+            Vec3d position,
+            Vec2f rotation, // in X and Z only
+            ServerWorld world,
+            int permissionLevel,
+            String name,
+            ITextComponent displayName,
+            MinecraftServer server,
+            @Nullable Entity entity,
+            boolean feedbackDisabled,
+            ResultConsumer<CommandSource> resultConsumer,
+            EntityAnchorArgument.Type entityAnchorType) {
+        throw new AssertionError("This should not be called!");
     }
 
 }

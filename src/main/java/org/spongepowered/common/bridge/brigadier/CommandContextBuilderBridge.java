@@ -22,39 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.bridge.brigadier;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import com.mojang.brigadier.RedirectModifier;
+import com.mojang.brigadier.context.ParsedArgument;
+import com.mojang.brigadier.context.StringRange;
+import com.mojang.brigadier.tree.CommandNode;
+
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
+public interface CommandContextBuilderBridge<S> {
 
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
+    void bridge$setRedirectModifier(@Nullable RedirectModifier<S> redirectModifier);
 
-    @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
-    }
+    void bridge$setFork(boolean fork);
 
-    @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
+    void bridge$setStringRange(StringRange range);
 
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
-    }
+    void bridge$putArguments(Map<String, ParsedArgument<S, ?>> arguments);
+
+    @Nullable RedirectModifier<S> bridge$getRedirectModifier();
+
+    boolean bridge$isForks();
 
 }

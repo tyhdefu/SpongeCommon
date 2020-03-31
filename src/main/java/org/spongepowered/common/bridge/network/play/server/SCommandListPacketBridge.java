@@ -22,39 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.bridge.network.play.server;
 
+import com.mojang.brigadier.tree.RootCommandNode;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import org.spongepowered.common.command.registrar.tree.RootCommandTreeBuilder;
 
-import javax.annotation.Nullable;
+public interface SCommandListPacketBridge {
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
+    void bridge$addRootCommandTreeBuilder(RootCommandTreeBuilder rootCommandTreeBuilder);
 
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
-
-    @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
-    }
-
-    @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
-
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
-    }
+    RootCommandNode<CommandSource> bridge$getRootCommandNode();
 
 }

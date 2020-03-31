@@ -22,39 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.mixin.core.brigadier.tree;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
+import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import com.mojang.brigadier.tree.RootCommandNode;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import org.spongepowered.common.bridge.brigadier.tree.RootCommandNodeBridge;
+import org.spongepowered.common.mixin.accessor.brigadier.tree.CommandNodeAccessor;
 
-import javax.annotation.Nullable;
-
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
-
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
+@Mixin(RootCommandNode.class)
+public abstract class RootCommandNodeMixin<S> extends CommandNodeMixin<S> implements RootCommandNodeBridge<S> {
 
     @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
-    }
-
-    @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
-
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+    public void bridge$removeNode(CommandNode<S> nodeToRemove) {
+        if (accessor$getChildren().containsValue(nodeToRemove)) {
+            // It's backed by the map, so it'll remove the corresponding key.
+            accessor$getChildren().values().remove(nodeToRemove);
+            if (nodeToRemove instanceof LiteralCommandNode) {
+                accessor$getLiterals().values().remove(nodeToRemove);
+            } else if (nodeToRemove instanceof ArgumentCommandNode) {
+                accessor$getArguments().values().remove(nodeToRemove);
+            }
+        }
     }
 
 }

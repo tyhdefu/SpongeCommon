@@ -28,9 +28,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.inject.Singleton;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import org.spongepowered.api.command.CommandCause;
 import org.spongepowered.api.registry.DuplicateRegistrationException;
 import org.spongepowered.api.registry.FactoryRegistry;
 import org.spongepowered.api.registry.UnknownTypeException;
+import org.spongepowered.common.command.manager.SpongeCommandCauseFactory;
 
 import java.util.Map;
 
@@ -56,7 +58,7 @@ public final class SpongeFactoryRegistry implements FactoryRegistry {
         return (T) duck;
     }
 
-    public <T> void registerFactory(Class<T> factoryClass, T factory) {
+    public <T> SpongeFactoryRegistry registerFactory(Class<T> factoryClass, T factory) {
         checkNotNull(factoryClass);
         checkNotNull(factory);
 
@@ -65,9 +67,11 @@ public final class SpongeFactoryRegistry implements FactoryRegistry {
         }
 
         this.factories.put(factoryClass, factory);
+        return this;
     }
 
     public void registerDefaultFactories() {
-        
+        this.registerFactory(CommandCause.Factory.class, SpongeCommandCauseFactory.INSTANCE);
     }
+
 }

@@ -22,39 +22,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.command.manager;
 
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.spongepowered.api.command.CommandCause;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.common.SpongeImpl;
+import org.spongepowered.common.bridge.command.CommandSourceBridge;
 import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
 
-import javax.annotation.Nullable;
+public class SpongeCommandCauseFactory implements CommandCause.Factory {
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
+    public static final SpongeCommandCauseFactory INSTANCE = new SpongeCommandCauseFactory();
 
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
+    private SpongeCommandCauseFactory() { }
 
     @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
-    }
+    @NonNull
+    public CommandCause create(Cause cause) {
+        CommandSource commandSource =
+                cause.first(CommandSourceProviderBridge.class).orElseGet(() -> (CommandSourceProviderBridge) SpongeImpl.getServer())
+                        .bridge$getCommandSource(cause);
+        // Heh, so this is going to get slightly complicated.
+        // Our Cause controls the source we get. Of course, we just got the appropriate command source from the
+        // cause, but there might be overrides in the context. So we need to apply them now.
 
-    @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
-
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+        ((CommandSourceBridge) commandSource).bridge$createFromCauseAndThisSource(cause);
+        return (CommandCause) commandSource;
     }
 
 }

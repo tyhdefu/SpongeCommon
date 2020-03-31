@@ -22,39 +22,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.command.registrar.tree;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import net.minecraft.network.PacketBuffer;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
+import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
 
-import javax.annotation.Nullable;
+public class AmountCommandTreeBuilder<T extends CommandTreeBuilder<T>>
+        extends ArgumentCommandTreeBuilder<T> implements CommandTreeBuilder.AmountBase<T> {
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
+    private static final String AMOUNT_KEY = "amount";
 
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
+    private static final String AMOUNT_SINGLE = "single";
+    private static final String AMOUNT_MULTIPLE = "multiple";
 
-    @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
+    public AmountCommandTreeBuilder(ClientCompletionKey<T> parameterType) {
+        super(parameterType);
+        this.addProperty(AMOUNT_KEY, AMOUNT_MULTIPLE);
     }
 
     @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
+    public T single() {
+        return this.addProperty(AMOUNT_KEY, AMOUNT_SINGLE);
+    }
+
+    public boolean isSingleTarget() {
+        return AMOUNT_SINGLE.equals(this.getProperty(AMOUNT_KEY));
     }
 
     @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+    public void applyProperties(PacketBuffer packetBuffer) {
+        // If allowing multiple, it's 1, else 0
+        if (isSingleTarget()) {
+            packetBuffer.writeByte(0);
+        } else {
+            packetBuffer.writeByte(1);
+        }
     }
-
 }

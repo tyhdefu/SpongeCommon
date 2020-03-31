@@ -22,39 +22,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.command.brigadier.tree;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import org.spongepowered.api.command.CommandExecutor;
+import org.spongepowered.api.command.exception.CommandException;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
-import javax.annotation.Nullable;
+public class SpongeCommandExecutorWrapper implements Command<CommandSource> {
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
+    private static final Text ERROR_MESSAGE = Text.of(TextColors.RED, "Error running command: ");
+    private final CommandExecutor executor;
 
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
-
-    @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
+    public SpongeCommandExecutorWrapper(CommandExecutor executor) {
+        this.executor = executor;
     }
 
     @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
+    public int run(CommandContext<CommandSource> context) {
+        try {
+            return this.executor.execute((org.spongepowered.api.command.parameter.CommandContext) context).getResult();
+        } catch (CommandException e) {
+            // Print the error message here
+            ((org.spongepowered.api.command.parameter.CommandContext) context).getMessageChannel().send(Text.of(ERROR_MESSAGE, e.getText()));
 
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+            // Now return zero, as required by Brigadier.
+            return 0;
+        }
     }
-
 }

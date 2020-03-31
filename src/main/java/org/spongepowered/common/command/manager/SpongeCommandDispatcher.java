@@ -22,39 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.command.manager;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import org.spongepowered.common.command.registrar.VanillaCommandRegistrar;
 
-import javax.annotation.Nullable;
-
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
-
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
+// This is a wrapper as we're going to trust the mods are not going to try to hijack this.
+// If they did, their commands would not get called.
+// This is so we can call super.register()
+//
+// If mods do the wrong thing, we'll mixin.
+public class SpongeCommandDispatcher extends CommandDispatcher<CommandSource> {
 
     @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
+    public LiteralCommandNode<CommandSource> register(LiteralArgumentBuilder<CommandSource> command) {
+        return VanillaCommandRegistrar.INSTANCE.register(command);
     }
 
-    @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
-
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+    // Yup. It is what it is.
+    public LiteralCommandNode<CommandSource> registerInternal(LiteralArgumentBuilder<CommandSource> command) {
+        return super.register(command);
     }
 
 }

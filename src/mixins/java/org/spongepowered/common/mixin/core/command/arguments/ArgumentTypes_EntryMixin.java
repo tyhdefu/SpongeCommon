@@ -22,39 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.mixin.core.command.arguments;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
+import com.mojang.brigadier.arguments.ArgumentType;
+import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
+import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import org.spongepowered.common.bridge.command.argument.ArgumentTypes_EntryBridge;
 
-import javax.annotation.Nullable;
+import java.util.function.Function;
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
+@Mixin(targets = "net/minecraft/command/arguments/ArgumentTypes$Entry")
+public abstract class ArgumentTypes_EntryMixin<T extends CommandTreeBuilder<T>, S extends ArgumentType<?>>
+        implements ArgumentTypes_EntryBridge<S, T> {
 
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
+    private Function<ClientCompletionKey<T>, T> impl$supplier;
 
     @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
+    public T bridge$provideCommandTreeBuilder() {
+        return this.impl$supplier.apply((ClientCompletionKey<T>) this);
     }
 
     @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
-
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+    public void bridge$setCommandTreeBuilderProvider(Function<ClientCompletionKey<T>, T> supplier) {
+        this.impl$supplier = supplier;
     }
 
 }

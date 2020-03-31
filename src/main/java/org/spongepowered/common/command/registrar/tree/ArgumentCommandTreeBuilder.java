@@ -22,39 +22,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.command.registrar.tree;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import com.google.gson.JsonObject;
+import net.minecraft.network.PacketBuffer;
+import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
+import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
+import org.spongepowered.common.util.Constants;
 
-import javax.annotation.Nullable;
+public class ArgumentCommandTreeBuilder<T extends CommandTreeBuilder<T>> extends AbstractCommandTreeBuilder<T> {
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
+    private final ClientCompletionKey<T> parameterType;
 
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
-
-    @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
+    public ArgumentCommandTreeBuilder(ClientCompletionKey<T> parameterType) {
+        this.parameterType = parameterType;
     }
 
     @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
+    void setType(JsonObject object) {
+        object.addProperty(Constants.Command.TYPE, Constants.Command.ARGUMENT);
+        object.addProperty(Constants.Command.PARSER, this.parameterType.getKey().getFormatted());
     }
 
     @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+    public byte getNodeMask() {
+        return (byte) (Constants.Command.ARGUMENT_NODE_BIT | this.customSuggestionsMask());
+    }
+
+    private byte customSuggestionsMask() {
+        return this.isCustomSuggestions() ? Constants.Command.CUSTOM_SUGGESTIONS_BIT : 0;
+    }
+
+    public ClientCompletionKey<T> getClientCompletionKey() {
+        return this.parameterType;
+    }
+
+    public void applyProperties(PacketBuffer packetBuffer) {
     }
 
 }

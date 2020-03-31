@@ -29,6 +29,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
+import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
@@ -80,6 +81,7 @@ import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.bridge.TimingBridge;
 import org.spongepowered.common.bridge.TrackableBridge;
 import org.spongepowered.common.bridge.block.BlockBridge;
+import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
 import org.spongepowered.common.bridge.data.CustomDataHolderBridge;
 import org.spongepowered.common.bridge.data.DataCompoundHolder;
 import org.spongepowered.common.bridge.data.InvulnerableTrackedBridge;
@@ -110,7 +112,8 @@ import java.util.Optional;
 import java.util.Random;
 
 @Mixin(Entity.class)
-public abstract class EntityMixin implements EntityBridge, TrackableBridge, VanishableBridge, InvulnerableTrackedBridge, TimingBridge {
+public abstract class EntityMixin implements EntityBridge, TrackableBridge, VanishableBridge, InvulnerableTrackedBridge, TimingBridge,
+        CommandSourceProviderBridge {
 
     // @formatter:off
     @Shadow @Nullable private Entity ridingEntity;
@@ -161,7 +164,7 @@ public abstract class EntityMixin implements EntityBridge, TrackableBridge, Vani
     @Shadow public abstract void shadow$setPositionAndUpdate(double x, double y, double z);
     @Shadow public abstract int shadow$getMaxAir();
 
-    private boolean impl$isConstructing = true;
+    @Shadow public abstract CommandSource getCommandSource();private boolean impl$isConstructing = true;
     @Nullable private Text impl$displayName;
     @Nullable private BlockPos impl$lastCollidedBlockPos;
     private boolean impl$trackedInWorld = false;
@@ -816,4 +819,10 @@ public abstract class EntityMixin implements EntityBridge, TrackableBridge, Vani
     public void bridge$setFireImmuneTicks(final int ticks) {
         this.impl$customFireImmuneTicks = ticks;
     }
+
+    @Override
+    public CommandSource bridge$getCommandSource(Cause cause) {
+        return this.getCommandSource();
+    }
+
 }

@@ -22,39 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.core.tileentity;
+package org.spongepowered.common.mixin.api.mcp.command.arguments;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.SignTileEntity;
-import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
+import com.mojang.brigadier.arguments.ArgumentType;
+import net.minecraft.util.ResourceLocation;
+import org.spongepowered.api.CatalogKey;
+import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
+import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
+import org.spongepowered.common.bridge.command.argument.ArgumentTypes_EntryBridge;
 
-import javax.annotation.Nullable;
+@Mixin(targets = "net/minecraft/command/arguments/ArgumentTypes$Entry")
+public abstract class ArgumentTypes_EntryMixin_API<T extends CommandTreeBuilder<T>, S extends ArgumentType<?>>
+        implements ClientCompletionKey<T>, ArgumentTypes_EntryBridge<S, T> {
 
-@Mixin(SignTileEntity.class)
-public abstract class SignTileEntityMixin extends TileEntityMixin implements SubjectBridge, CommandSourceProviderBridge {
-
-    @Shadow public abstract CommandSource getCommandSource(@Nullable ServerPlayerEntity p_195539_1_);
+    @Shadow @Final public ResourceLocation shadow$id;
 
     @Override
-    public String bridge$getSubjectCollectionIdentifier() {
-        return PermissionService.SUBJECTS_COMMAND_BLOCK;
+    public T createCommandTreeBuilder() {
+        return this.bridge$provideCommandTreeBuilder();
     }
 
     @Override
-    public Tristate bridge$permDefault(String permission) {
-        return Tristate.TRUE;
-    }
-
-    @Override
-    public CommandSource bridge$getCommandSource(Cause cause) {
-        return this.getCommandSource(cause.first(ServerPlayerEntity.class).orElse(null));
+    public CatalogKey getKey() {
+        return (CatalogKey) (Object) this.shadow$id;
     }
 
 }
