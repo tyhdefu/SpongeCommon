@@ -41,38 +41,38 @@ import javax.annotation.Nullable;
 @Mixin(value = CommandContextBuilder.class, remap = false)
 public abstract class CommandContextBuilderMixin<S> implements CommandContextBuilderBridge<S> {
 
-    @Shadow @Final private Map<String, ParsedArgument<S, ?>> arguments;
-    @Shadow private StringRange range;
-    @Shadow @Nullable private RedirectModifier<S> modifier = null;
-    @Shadow private boolean forks;
+    @Shadow @Final private Map<String, ParsedArgument<S, ?>> shadow$arguments;
+    @Shadow private StringRange shadow$range;
+    @Shadow @Nullable private RedirectModifier<S> shadow$modifier = null;
+    @Shadow private boolean shadow$forks;
 
     @Override
     public RedirectModifier<S> bridge$getRedirectModifier() {
-        return this.modifier;
+        return this.shadow$modifier;
     }
 
     @Override
     public boolean bridge$isForks() {
-        return this.forks;
+        return this.shadow$forks;
     }
 
     @Override
     public void bridge$setRedirectModifier(@Nullable RedirectModifier<S> redirectModifier) {
-        this.modifier = redirectModifier;
+        this.shadow$modifier = redirectModifier;
     }
 
     @Override
     public void bridge$setFork(boolean fork) {
-        this.forks = fork;
+        this.shadow$forks = fork;
     }
 
     @Override
     public void bridge$setStringRange(StringRange range) {
-        this.range = range;
+        this.shadow$range = range;
     }
 
     @Override
     public void bridge$putArguments(Map<String, ParsedArgument<S, ?>> arguments) {
-        this.arguments.putAll(arguments);
+        this.shadow$arguments.putAll(arguments);
     }
 }

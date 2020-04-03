@@ -42,7 +42,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.bridge.command.CommandSourceBridge;
-import org.spongepowered.common.mixin.accessor.command.CommandSourceAccessor;
+import org.spongepowered.common.accessor.command.CommandSourceAccessor;
 import org.spongepowered.common.util.VecHelper;
 
 @Mixin(CommandSource.class)
@@ -95,7 +95,7 @@ public abstract class CommandSourceMixin implements CommandSourceBridge {
                 eventContext.containsKey(EventContextKeys.LOCATION) ||
                 eventContext.containsKey(EventContextKeys.ROTATION) ||
                 eventContext.containsKey(EventContextKeys.BLOCK_TARGET)) {
-            return impl$withCause(currentCause);
+            return this.impl$withCause(currentCause);
         }
 
         this.impl$cause = currentCause;

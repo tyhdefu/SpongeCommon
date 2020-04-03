@@ -32,19 +32,20 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.common.bridge.brigadier.tree.CommandNodeBridge;
-import org.spongepowered.common.mixin.accessor.brigadier.tree.CommandNodeAccessor;
+import org.spongepowered.common.accessor.brigadier.tree.CommandNodeAccessor;
 
 import java.util.Arrays;
 
 @Mixin(CommandNode.class)
-public abstract class CommandNodeMixin<S> implements CommandNodeAccessor<S>, CommandNodeBridge<S> {
+public abstract class CommandNodeMixin<S> implements CommandNodeBridge<S> {
 
     private String impl$stringRedirect;
     private CommandNode<S> impl$lazyRedirect;
 
     @Override
     public void bridge$provideRedirectString(final String redirectString) {
-        Preconditions.checkArgument(this.accessor$getChildren().isEmpty(), "No children allowed if providing a redirect.");
+        Preconditions.checkArgument(
+                ((CommandNodeAccessor<S>) this).accessor$getChildren().isEmpty(), "No children allowed if providing a redirect.");
         this.impl$stringRedirect = redirectString;
     }
 

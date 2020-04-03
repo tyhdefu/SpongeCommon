@@ -54,11 +54,6 @@ import java.util.Map;
 @Mixin(Commands.class)
 public abstract class CommandsMixin {
 
-    @Shadow
-    protected abstract void commandSourceNodesToSuggestionNodes(CommandNode<CommandSource> rootCommandSource,
-            CommandNode<ISuggestionProvider> rootSuggestion, CommandSource source,
-            Map<CommandNode<CommandSource>, CommandNode<ISuggestionProvider>> commandNodeToSuggestionNode);
-
     // We augment the CommandDispatcher with our own methods using a wrapper, so we need to make sure it's replaced here.
     @Redirect(method = "<init>", at = @At(
             value = "NEW",
@@ -76,6 +71,11 @@ public abstract class CommandsMixin {
         return SpongeImpl.getCommandManager().process(source, commandToSend);
     }
 /* TODO: This may very well not be needed, but keeping it on hand just in case for the moment
+
+    @Shadow
+    protected abstract void commandSourceNodesToSuggestionNodes(CommandNode<CommandSource> rootCommandSource,
+            CommandNode<ISuggestionProvider> rootSuggestion, CommandSource source,
+            Map<CommandNode<CommandSource>, CommandNode<ISuggestionProvider>> commandNodeToSuggestionNode);
 
     @Redirect(method = "send", at =
         @At(

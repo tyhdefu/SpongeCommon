@@ -71,12 +71,12 @@ public abstract class ArgumentTypesMixin {
                     to = @At("TAIL")),
             at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"))
     private static <T extends ArgumentType<?>> Object impl$registerClientCompletionKey(
-            Map<ResourceLocation, Object> idTypeMap,
-            @Coerce Object resourceLocation,
-            @Coerce Object entry,
-            String namespace,
-            Class<?> argumentType,
-            IArgumentSerializer<?> serializer) {
+            final Map<ResourceLocation, Object> idTypeMap,
+            @Coerce final Object resourceLocation,
+            @Coerce final Object entry,
+            final String namespace,
+            final Class<?> argumentType,
+            final IArgumentSerializer<?> serializer) {
 
         if (serializer instanceof DoubleArgumentSerializer) {
             impl$addToValue(entry,
@@ -121,8 +121,8 @@ public abstract class ArgumentTypesMixin {
     private static BiConsumer<PacketBuffer, RangeCommandTreeBuilder<Double>> impl$doubleSerializer(
             final DoubleArgumentSerializer serializer) {
         return (buffer, commandTreeBuilder) -> {
-            double min = commandTreeBuilder.getMin().orElse(-Double.MAX_VALUE);
-            double max = commandTreeBuilder.getMax().orElse(Double.MAX_VALUE);
+            final double min = commandTreeBuilder.getMin().orElse(-Double.MAX_VALUE);
+            final double max = commandTreeBuilder.getMax().orElse(Double.MAX_VALUE);
             serializer.write(DoubleArgumentType.doubleArg(min, max), buffer);
         };
     }
@@ -130,8 +130,8 @@ public abstract class ArgumentTypesMixin {
     private static BiConsumer<PacketBuffer, RangeCommandTreeBuilder<Integer>> impl$intSerializer(
             final IntArgumentSerializer serializer) {
         return (buffer, commandTreeBuilder) -> {
-            int min = commandTreeBuilder.getMin().orElse(-Integer.MAX_VALUE);
-            int max = commandTreeBuilder.getMax().orElse(Integer.MAX_VALUE);
+            final int min = commandTreeBuilder.getMin().orElse(-Integer.MAX_VALUE);
+            final int max = commandTreeBuilder.getMax().orElse(Integer.MAX_VALUE);
             serializer.write(IntegerArgumentType.integer(min, max), buffer);
         };
     }
@@ -139,8 +139,8 @@ public abstract class ArgumentTypesMixin {
     private static BiConsumer<PacketBuffer, RangeCommandTreeBuilder<Long>> impl$longSerializer(
             final LongArgumentSerializer serializer) {
         return (buffer, commandTreeBuilder) -> {
-            long min = commandTreeBuilder.getMin().orElse(-Long.MAX_VALUE);
-            long max = commandTreeBuilder.getMax().orElse(Long.MAX_VALUE);
+            final long min = commandTreeBuilder.getMin().orElse(-Long.MAX_VALUE);
+            final long max = commandTreeBuilder.getMax().orElse(Long.MAX_VALUE);
             serializer.write(LongArgumentType.longArg(min, max), buffer);
         };
     }
@@ -148,8 +148,8 @@ public abstract class ArgumentTypesMixin {
     private static BiConsumer<PacketBuffer, RangeCommandTreeBuilder<Float>> impl$floatSerializer(
             final FloatArgumentSerializer serializer) {
         return (buffer, commandTreeBuilder) -> {
-            float min = commandTreeBuilder.getMin().orElse(-Float.MAX_VALUE);
-            float max = commandTreeBuilder.getMax().orElse(Float.MAX_VALUE);
+            final float min = commandTreeBuilder.getMin().orElse(-Float.MAX_VALUE);
+            final float max = commandTreeBuilder.getMax().orElse(Float.MAX_VALUE);
             serializer.write(FloatArgumentType.floatArg(min, max), buffer);
         };
     }

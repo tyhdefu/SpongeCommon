@@ -46,12 +46,13 @@ public abstract class ArgumentBuilderMixin<S, T extends ArgumentBuilder<S, T>> i
     @Shadow private RedirectModifier<S> modifier;
     @Shadow private CommandNode<S> target;
 
-    @Shadow public abstract T then(CommandNode<S> argument);
+    @Shadow
+    public abstract T shadow$then(CommandNode<S> argument);
 
     @SuppressWarnings("unchecked")
     public T bridge$cloneFrom(ArgumentBuilder<S, T> builder) {
         for (CommandNode<S> commandNode : this.arguments.getChildren()) {
-            then(commandNode);
+            this.shadow$then(commandNode);
         }
 
         this.requirement = builder.getRequirement();

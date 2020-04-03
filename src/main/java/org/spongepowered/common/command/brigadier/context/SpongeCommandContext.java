@@ -40,7 +40,7 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.world.Location;
-import org.spongepowered.common.mixin.accessor.brigadier.context.CommandContextAccessor;
+import org.spongepowered.common.accessor.brigadier.context.CommandContextAccessor;
 
 import java.util.Collection;
 import java.util.HashMap;

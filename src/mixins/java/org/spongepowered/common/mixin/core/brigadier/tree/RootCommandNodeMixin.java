@@ -29,21 +29,22 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.common.accessor.brigadier.tree.CommandNodeAccessor;
 import org.spongepowered.common.bridge.brigadier.tree.RootCommandNodeBridge;
-import org.spongepowered.common.mixin.accessor.brigadier.tree.CommandNodeAccessor;
 
 @Mixin(RootCommandNode.class)
 public abstract class RootCommandNodeMixin<S> extends CommandNodeMixin<S> implements RootCommandNodeBridge<S> {
 
     @Override
     public void bridge$removeNode(CommandNode<S> nodeToRemove) {
-        if (accessor$getChildren().containsValue(nodeToRemove)) {
+        CommandNodeAccessor<S> accessor = (CommandNodeAccessor<S>) this;
+        if (accessor.accessor$getChildren().containsValue(nodeToRemove)) {
             // It's backed by the map, so it'll remove the corresponding key.
-            accessor$getChildren().values().remove(nodeToRemove);
+            accessor.accessor$getChildren().values().remove(nodeToRemove);
             if (nodeToRemove instanceof LiteralCommandNode) {
-                accessor$getLiterals().values().remove(nodeToRemove);
+                accessor.accessor$getLiterals().values().remove(nodeToRemove);
             } else if (nodeToRemove instanceof ArgumentCommandNode) {
-                accessor$getArguments().values().remove(nodeToRemove);
+                accessor.accessor$getArguments().values().remove(nodeToRemove);
             }
         }
     }
