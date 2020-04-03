@@ -40,7 +40,6 @@ import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.command.parameter.managed.ValueParameter;
 import org.spongepowered.api.command.parameter.managed.standard.CatalogedValueParameter;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.selector.Argument;
 
 import java.util.Collection;
 import java.util.List;
@@ -94,7 +93,7 @@ public class SpongeArgumentTypeAdapter<T> implements ArgumentType<T>, CatalogedV
     @Override
     public List<String> complete(final CommandContext context) {
         CompletableFuture<Suggestions> c =
-                listSuggestions((com.mojang.brigadier.context.CommandContext) context, new SuggestionsBuilder("", 0));
+                this.listSuggestions((com.mojang.brigadier.context.CommandContext) context, new SuggestionsBuilder("", 0));
         try {
             return c.get().getList().stream().map(Suggestion::getText).collect(Collectors.toList());
         } catch (InterruptedException | ExecutionException e) {

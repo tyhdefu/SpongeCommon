@@ -31,6 +31,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.inject.Singleton;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.CommandSource;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.Sponge;
@@ -54,6 +57,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.command.registrar.SpongeManagedCommandRegistrar;
 import org.spongepowered.common.command.registrar.SpongeRawCommandRegistrar;
+import org.spongepowered.common.command.registrar.tree.RootCommandTreeBuilder;
 import org.spongepowered.common.text.SpongeTexts;
 
 import java.util.Arrays;
@@ -66,6 +70,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -77,15 +82,15 @@ public class SpongeCommandManager implements CommandManager {
 
     @NonNull
     public CommandMapping registerAlias(
-            @NonNull CommandRegistrar registrar,
-            @NonNull PluginContainer container,
-            @NonNull LiteralArgumentBuilder<CommandSource> rootArgument,
-            @NonNull String @NonNull... secondaryAliases)
+            @NonNull final CommandRegistrar registrar,
+            @NonNull final PluginContainer container,
+            @NonNull final LiteralArgumentBuilder<CommandSource> rootArgument,
+            @NonNull final String @NonNull... secondaryAliases)
             throws CommandFailedRegistrationException {
         final String requestedPrimaryAlias = rootArgument.getLiteral();
 
         // Get the mapping, if any.
-        return registerAliasInternal(
+        return this.registerAliasInternal(
                 registrar,
                 container,
                 requestedPrimaryAlias,
@@ -95,23 +100,60 @@ public class SpongeCommandManager implements CommandManager {
 
     @Override
     @NonNull
+    @SuppressWarnings("unchecked")
     public CommandMapping registerAlias(
-            @NonNull CommandRegistrar registrar,
-            @NonNull PluginContainer container,
-            CommandTreeBuilder.@NonNull Basic parameterTree,
-            @NonNull String primaryAlias,
-            @NonNull String @NonNull... secondaryAliases)
+            @NonNull final CommandRegistrar registrar,
+            @NonNull final PluginContainer container,
+            final CommandTreeBuilder.@NonNull Basic parameterTree,
+            @NonNull final Predicate<CommandCause> requirement,
+            @NonNull final String primaryAlias,
+            @NonNull final String @NonNull ... secondaryAliases)
             throws CommandFailedRegistrationException {
-        // TODO: Deal with the parameter tree.
-        return registerAliasInternal(registrar, container, primaryAlias, secondaryAliases);
+        final CommandMapping mapping = registerAliasInternal(registrar, container, primaryAlias, secondaryAliases);
+
+        // In general, this won't be executed as we will intercept it before this point. However,
+        // this is as a just in case - a mod redirect or something.
+        com.mojang.brigadier.Command<CommandSource> command = context -> {
+            org.spongepowered.api.command.parameter.CommandContext spongeContext =
+                    (org.spongepowered.api.command.parameter.CommandContext) context;
+            String[] command1 = context.getInput().split(" ", 2);
+            try {
+                return registrar.process(spongeContext, command1[0], command1.length == 2 ? command1[1] : "").getResult();
+            } catch (CommandException e) {
+                throw new SimpleCommandExceptionType(SpongeTexts.toComponent(e.getText())).create();
+            }
+        };
+
+        Collection<CommandNode<CommandSource>> commandSourceRootCommandNode = ((RootCommandTreeBuilder) parameterTree)
+                .createArgumentTree(command);
+
+        // From the primary alias...
+        LiteralArgumentBuilder<CommandSource> node = LiteralArgumentBuilder.literal(mapping.getPrimaryAlias());
+
+        // CommandSource == CommandCause, so this will be fine.
+        node.requires((Predicate<CommandSource>) (Object) requirement).executes(command);
+        for (CommandNode<CommandSource> commandNode : commandSourceRootCommandNode) {
+            node.then(commandNode);
+        }
+
+        LiteralCommandNode<CommandSource> commandToAppend =
+                ((SpongeCommandDispatcher) SpongeImpl.getServer().getCommandManager().getDispatcher()).registerInternal(node);
+        for (String secondaryAlias : mapping.getAllAliases()) {
+            if (!secondaryAlias.equals(mapping.getPrimaryAlias())) {
+                ((SpongeCommandDispatcher) SpongeImpl.getServer().getCommandManager().getDispatcher())
+                        .registerInternal(LiteralArgumentBuilder.<CommandSource>literal(secondaryAlias).redirect(commandToAppend));
+            }
+        }
+
+        return mapping;
     }
 
     @NonNull
     private CommandMapping registerAliasInternal(
-            @NonNull CommandRegistrar registrar,
-            @NonNull PluginContainer container,
-            @NonNull String primaryAlias,
-            @NonNull String @NonNull... secondaryAliases)
+            @NonNull final CommandRegistrar registrar,
+            @NonNull final PluginContainer container,
+            @NonNull final String primaryAlias,
+            @NonNull final String @NonNull... secondaryAliases)
             throws CommandFailedRegistrationException {
         // Check it's been registered:
         if (primaryAlias.contains(" ") || Arrays.stream(secondaryAliases).anyMatch(x -> x.contains(" "))) {
@@ -155,7 +197,7 @@ public class SpongeCommandManager implements CommandManager {
         }
 
         // Create the mapping
-        SpongeCommandMapping mapping = new SpongeCommandMapping(
+        final SpongeCommandMapping mapping = new SpongeCommandMapping(
                 primaryAlias,
                 aliases,
                 container,
@@ -173,11 +215,12 @@ public class SpongeCommandManager implements CommandManager {
     // Sponge command
     @Override
     @NonNull
-    public CommandMapping register(@NonNull PluginContainer container,
-            @NonNull Command command,
-            @NonNull String primaryAlias,
-            @NonNull String @NonNull... secondaryAliases) throws CommandFailedRegistrationException {
-        CommandMapping mapping;
+    public CommandMapping register(
+            @NonNull final PluginContainer container,
+            @NonNull final Command command,
+            @NonNull final String primaryAlias,
+            @NonNull final String @NonNull... secondaryAliases) throws CommandFailedRegistrationException {
+        final CommandMapping mapping;
         if (command instanceof Command.Parameterized) {
             // send it to the Sponge Managed registrar
             mapping = SpongeManagedCommandRegistrar.INSTANCE.register(container, (Command.Parameterized) command, primaryAlias, secondaryAliases);
@@ -191,19 +234,19 @@ public class SpongeCommandManager implements CommandManager {
 
     @Override
     @NonNull
-    public Optional<CommandMapping> unregister(@NonNull CommandMapping mapping) {
+    public Optional<CommandMapping> unregister(@NonNull final CommandMapping mapping) {
         if (!(mapping instanceof SpongeCommandMapping)) {
             throw new IllegalArgumentException("Mapping is not of type SpongeCommandMapping!");
         }
 
-        SpongeCommandMapping spongeCommandMapping = (SpongeCommandMapping) mapping;
+        final SpongeCommandMapping spongeCommandMapping = (SpongeCommandMapping) mapping;
 
         // Cannot unregister Sponge or Minecraft commands
         if (isMinecraftOrSpongePluginContainer(mapping.getPlugin())) {
             return Optional.empty();
         }
 
-        Collection<String> aliases = this.inverseCommandMappings.get(spongeCommandMapping);
+        final Collection<String> aliases = this.inverseCommandMappings.get(spongeCommandMapping);
         if (mapping.getAllAliases().containsAll(aliases)) {
             // Okay - the mapping checks out.
             this.inverseCommandMappings.removeAll(spongeCommandMapping);
@@ -221,9 +264,9 @@ public class SpongeCommandManager implements CommandManager {
     @Override
     @NonNull
     public Collection<CommandMapping> unregisterAll(@NonNull PluginContainer container) {
-        Collection<SpongeCommandMapping> mappingsToRemove = this.pluginToCommandMap.get(container);
-        ImmutableList.Builder<CommandMapping> commandMappingBuilder = ImmutableList.builder();
-        for (CommandMapping toRemove : mappingsToRemove) {
+        final Collection<SpongeCommandMapping> mappingsToRemove = this.pluginToCommandMap.get(container);
+        final ImmutableList.Builder<CommandMapping> commandMappingBuilder = ImmutableList.builder();
+        for (final CommandMapping toRemove : mappingsToRemove) {
             unregister(toRemove).ifPresent(commandMappingBuilder::add);
         }
 
@@ -237,17 +280,17 @@ public class SpongeCommandManager implements CommandManager {
     }
 
     @Override
-    public boolean isRegistered(@NonNull CommandMapping mapping) {
+    public boolean isRegistered(@NonNull final CommandMapping mapping) {
         Preconditions.checkArgument(mapping instanceof SpongeCommandMapping, "Mapping is not of type SpongeCommandMapping!");
         return this.inverseCommandMappings.containsKey(mapping);
     }
 
-    public int process(@NonNull CommandSource source, @NonNull String commandToSend) throws net.minecraft.command.CommandException {
-        try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+    public int process(@NonNull final CommandSource source, @NonNull final String commandToSend) throws net.minecraft.command.CommandException {
+        try (final CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
             frame.pushCause(source);
             return process(commandToSend).getResult();
         } catch (CommandException ex) {
-            Throwable cause = ex.getCause();
+            final Throwable cause = ex.getCause();
             if (cause instanceof net.minecraft.command.CommandException) {
                 throw (net.minecraft.command.CommandException) cause;
             }
@@ -259,13 +302,13 @@ public class SpongeCommandManager implements CommandManager {
 
     @Override
     @NonNull
-    public CommandResult process(@NonNull String arguments) throws CommandException {
+    public CommandResult process(@NonNull final String arguments) throws CommandException {
         try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
             frame.addContext(EventContextKeys.COMMAND_STRING.get(), arguments);
-            String[] splitArg = arguments.split(" ", 2);
-            String command = splitArg[0];
-            String args = splitArg.length == 2 ? splitArg[1] : "";
-            SpongeCommandMapping mapping = this.commandMappings.get(command.toLowerCase());
+            final String[] splitArg = arguments.split(" ", 2);
+            final String command = splitArg[0];
+            final String args = splitArg.length == 2 ? splitArg[1] : "";
+            final SpongeCommandMapping mapping = this.commandMappings.get(command.toLowerCase());
             if (mapping == null) {
                 // no command.
                 throw new CommandException(Text.of(TextColors.RED, "Unknown command. Type /help for a list of commands."));
@@ -289,10 +332,10 @@ public class SpongeCommandManager implements CommandManager {
     @Override
     @NonNull
     public CommandResult process(
-            @NonNull Subject subject,
-            @NonNull MessageChannel receiver,
-            @NonNull String arguments) throws CommandException {
-        try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+            @NonNull final Subject subject,
+            @NonNull final MessageChannel receiver,
+            @NonNull final String arguments) throws CommandException {
+        try (final CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
             frame.addContext(EventContextKeys.SUBJECT.get(), subject);
             frame.addContext(EventContextKeys.MESSAGE_CHANNEL.get(), receiver);
             return process(arguments);
@@ -302,15 +345,15 @@ public class SpongeCommandManager implements CommandManager {
     @Override
     @NonNull
     public List<String> suggest(@NonNull String arguments) {
-        try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+        try (final CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
             frame.addContext(EventContextKeys.COMMAND_STRING.get(), arguments);
-            String[] splitArg = arguments.split(" ", 2);
-            String command = splitArg[0].toLowerCase();
+            final String[] splitArg = arguments.split(" ", 2);
+            final String command = splitArg[0].toLowerCase();
 
             if (splitArg.length == 2) {
                 // we have a subcommand, suggest on that if it exists, else
                 // return nothing
-                SpongeCommandMapping mapping = this.commandMappings.get(command);
+                final SpongeCommandMapping mapping = this.commandMappings.get(command);
                 if (mapping == null) {
                     return Collections.emptyList();
                 }
@@ -333,7 +376,7 @@ public class SpongeCommandManager implements CommandManager {
     public <T extends Subject & MessageReceiver> List<String> suggest(
             @NonNull T subjectReceiver,
             @NonNull String arguments) {
-        try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+        try (final CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
             frame.addContext(EventContextKeys.SUBJECT.get(), subjectReceiver);
             frame.addContext(EventContextKeys.MESSAGE_CHANNEL.get(), MessageChannel.to(subjectReceiver));
             return suggest(arguments);
@@ -343,10 +386,10 @@ public class SpongeCommandManager implements CommandManager {
     @Override
     @NonNull
     public List<String> suggest(
-            @NonNull Subject subject,
-            @NonNull MessageChannel receiver,
-            @NonNull String arguments) {
-        try (CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
+            @NonNull final Subject subject,
+            @NonNull final MessageChannel receiver,
+            @NonNull final String arguments) {
+        try (final CauseStackManager.StackFrame frame = Sponge.getCauseStackManager().pushCauseFrame()) {
             frame.addContext(EventContextKeys.SUBJECT.get(), subject);
             frame.addContext(EventContextKeys.MESSAGE_CHANNEL.get(), receiver);
             return suggest(arguments);
@@ -357,7 +400,7 @@ public class SpongeCommandManager implements CommandManager {
         return this.commandMappings;
     }
 
-    private boolean isMinecraftOrSpongePluginContainer(PluginContainer pluginContainer) {
+    private boolean isMinecraftOrSpongePluginContainer(final PluginContainer pluginContainer) {
         return !(SpongeImpl.getMinecraftPlugin() == pluginContainer || SpongeImpl.getSpongePlugin() == pluginContainer);
     }
 

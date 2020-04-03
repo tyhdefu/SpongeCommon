@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.accessor.command;
+package org.spongepowered.common.accessor.command;
 
 import com.mojang.brigadier.ResultConsumer;
 import net.minecraft.command.CommandSource;
@@ -34,7 +34,6 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.server.ServerWorld;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
@@ -51,7 +50,7 @@ public interface CommandSourceAccessor {
             String name,
             ITextComponent displayName,
             MinecraftServer server,
-            @Nullable Entity entity,
+            Entity entity,
             boolean feedbackDisabled,
             ResultConsumer<CommandSource> resultConsumer,
             EntityAnchorArgument.Type entityAnchorType) {

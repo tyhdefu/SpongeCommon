@@ -25,9 +25,14 @@
 package org.spongepowered.common.command.registrar.tree;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.tree.CommandNode;
+import net.minecraft.command.CommandSource;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
 import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
@@ -36,26 +41,26 @@ import org.spongepowered.common.util.Constants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class AbstractCommandTreeBuilder<T extends CommandTreeBuilder<T>> implements CommandTreeBuilder<T> {
+public abstract class AbstractCommandTreeBuilder<T extends CommandTreeBuilder<T>, O extends CommandNode<CommandSource>>
+        implements CommandTreeBuilder<T> {
 
     @Nullable private Map<String, Object> properties = null;
     @Nullable private String redirect = null;
-    @Nullable private Map<String, AbstractCommandTreeBuilder<?>> children = null;
+    @Nullable private Map<String, AbstractCommandTreeBuilder<?, ?>> children = null;
     private boolean executable = false;
     private boolean customSuggestions = false;
 
-    public ImmutableMap<String, AbstractCommandTreeBuilder<?>> getChildren() {
+    public ImmutableMap<String, AbstractCommandTreeBuilder<?, ?>> getChildren() {
         if (this.children == null) {
             return ImmutableMap.of();
         }
         return ImmutableMap.copyOf(this.children);
     }
 
-    final void addChildrenInternal(Map<String, AbstractCommandTreeBuilder<?>> children) {
+    final void addChildrenInternal(Map<String, AbstractCommandTreeBuilder<?, ?>> children) {
         if (this.children == null) {
             this.children = new HashMap<>();
         }
@@ -91,7 +96,7 @@ public abstract class AbstractCommandTreeBuilder<T extends CommandTreeBuilder<T>
 
         S childTreeBuilder = builderSupplier.get();
         childNode.accept(childTreeBuilder);
-        this.children.put(key.toLowerCase(), (AbstractCommandTreeBuilder<?>) childTreeBuilder);
+        this.children.put(key.toLowerCase(), (AbstractCommandTreeBuilder<?, ?>) childTreeBuilder);
         return getThis();
     }
 
@@ -149,7 +154,7 @@ public abstract class AbstractCommandTreeBuilder<T extends CommandTreeBuilder<T>
         if (withChildren && this.children != null) {
             // create children
             JsonObject childrenObject = new JsonObject();
-            for (Map.Entry<String, AbstractCommandTreeBuilder<?>> element : this.children.entrySet()) {
+            for (Map.Entry<String, AbstractCommandTreeBuilder<?, ?>> element : this.children.entrySet()) {
                 childrenObject.add(element.getKey(), element.getValue().toJson(new JsonObject(), true));
             }
             object.add("children", childrenObject);
@@ -239,6 +244,12 @@ public abstract class AbstractCommandTreeBuilder<T extends CommandTreeBuilder<T>
         }
 
         return this.properties.get(key);
+    }
+
+    protected abstract O createArgumentTree(String nodeKey, Command<CommandSource> command);
+
+    protected final void addChildNodesToTree(ArgumentBuilder<CommandSource, ?> builder, Command<CommandSource> command) {
+        this.getChildren().forEach((key, value) -> builder.then(value.createArgumentTree(key, command)));
     }
 
 }

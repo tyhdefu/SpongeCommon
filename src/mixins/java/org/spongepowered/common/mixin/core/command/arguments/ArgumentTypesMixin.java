@@ -29,12 +29,10 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import jdk.internal.org.objectweb.asm.Opcodes;
 import net.minecraft.command.arguments.ArgumentTypes;
 import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.command.arguments.IArgumentSerializer;
-import net.minecraft.command.arguments.IRangeArgument;
 import net.minecraft.command.arguments.serializers.DoubleArgumentSerializer;
 import net.minecraft.command.arguments.serializers.FloatArgumentSerializer;
 import net.minecraft.command.arguments.serializers.IntArgumentSerializer;
@@ -46,26 +44,22 @@ import org.spongepowered.api.CatalogKey;
 import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
 import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.common.SpongeImpl;
+import org.spongepowered.common.accessor.command.arguments.ArgumentSerializerAccessor;
 import org.spongepowered.common.bridge.command.argument.ArgumentTypes_EntryBridge;
 import org.spongepowered.common.command.brigadier.argument.SpongeArgumentTypeAdapter;
 import org.spongepowered.common.command.registrar.tree.EmptyCommandTreeBuilder;
 import org.spongepowered.common.command.registrar.tree.EntityCommandTreeBuilder;
 import org.spongepowered.common.command.registrar.tree.RangeCommandTreeBuilder;
 import org.spongepowered.common.command.registrar.tree.StringCommandTreeBuilder;
-import org.spongepowered.common.mixin.accessor.command.arguments.ArgumentSerializerAccessor;
-import org.spongepowered.common.util.Constants;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
 
 @Mixin(ArgumentTypes.class)
 public abstract class ArgumentTypesMixin {

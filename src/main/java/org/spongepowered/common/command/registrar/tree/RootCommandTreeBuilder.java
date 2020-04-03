@@ -24,16 +24,20 @@
  */
 package org.spongepowered.common.command.registrar.tree;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
-import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
-import net.minecraft.command.ISuggestionProvider;
+import net.minecraft.command.CommandSource;
 import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
 import org.spongepowered.common.util.Constants;
 
+import java.util.Collection;
 import java.util.Map;
 
-public class RootCommandTreeBuilder extends AbstractCommandTreeBuilder<CommandTreeBuilder.Basic> implements CommandTreeBuilder.Basic {
+public class RootCommandTreeBuilder extends AbstractCommandTreeBuilder<CommandTreeBuilder.Basic, RootCommandNode<CommandSource>>
+        implements CommandTreeBuilder.Basic {
 
     @Override
     void setType(JsonObject object) {
@@ -45,7 +49,19 @@ public class RootCommandTreeBuilder extends AbstractCommandTreeBuilder<CommandTr
         return Constants.Command.ROOT_NODE_BIT;
     }
 
-    public void addChildren(Map<String, AbstractCommandTreeBuilder<?>> children) {
+    @Override
+    protected RootCommandNode<CommandSource> createArgumentTree(String nodeKey, Command<CommandSource> command) {
+        throw new IllegalStateException("RootCommandTreeBuilder must not be part of a tree (except as the root!)");
+    }
+
+    public Collection<CommandNode<CommandSource>> createArgumentTree(Command<CommandSource> command) {
+        // The node key is ignored here.
+        final ImmutableList.Builder<CommandNode<CommandSource>> builder = ImmutableList.builder();
+        this.getChildren().forEach((key, value) -> builder.add(value.createArgumentTree(key, command)));
+        return builder.build();
+    }
+
+    public void addChildren(Map<String, AbstractCommandTreeBuilder<?, ?>> children) {
         this.addChildrenInternal(children);
     }
 

@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.accessor.command.arguments;
+package org.spongepowered.common.accessor.command.arguments;
 
 import com.mojang.brigadier.arguments.ArgumentType;
 import net.minecraft.command.arguments.ArgumentSerializer;

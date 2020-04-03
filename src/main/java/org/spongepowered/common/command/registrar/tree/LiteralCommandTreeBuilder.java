@@ -25,10 +25,15 @@
 package org.spongepowered.common.command.registrar.tree;
 
 import com.google.gson.JsonObject;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
 import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
 import org.spongepowered.common.util.Constants;
 
-public class LiteralCommandTreeBuilder extends AbstractCommandTreeBuilder<CommandTreeBuilder.Basic> implements CommandTreeBuilder.Basic {
+public class LiteralCommandTreeBuilder extends AbstractCommandTreeBuilder<CommandTreeBuilder.Basic, LiteralCommandNode<CommandSource>> implements CommandTreeBuilder.Basic {
 
     @Override
     void setType(JsonObject object) {
@@ -38,6 +43,13 @@ public class LiteralCommandTreeBuilder extends AbstractCommandTreeBuilder<Comman
     @Override
     public byte getNodeMask() {
         return Constants.Command.LITERAL_NODE_BIT;
+    }
+
+    @Override
+    protected LiteralCommandNode<CommandSource> createArgumentTree(String nodeKey, Command<CommandSource> command) {
+        LiteralArgumentBuilder<CommandSource> node = LiteralArgumentBuilder.literal(nodeKey);
+        this.addChildNodesToTree(node, command);
+        return node.build();
     }
 
 }

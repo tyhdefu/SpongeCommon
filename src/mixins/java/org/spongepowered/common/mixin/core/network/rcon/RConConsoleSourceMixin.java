@@ -22,29 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.mixin.invalid.core.network.rcon;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+package org.spongepowered.common.mixin.core.network.rcon;
 
 import net.minecraft.command.CommandSource;
-import net.minecraft.network.rcon.ClientThread;
 import net.minecraft.network.rcon.RConConsoleSource;
-import net.minecraft.util.text.ITextComponent;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.util.Tristate;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.common.bridge.command.CommandSourceBridge;
 import org.spongepowered.common.bridge.command.CommandSourceProviderBridge;
-import org.spongepowered.common.bridge.network.rcon.RConConsoleSourceBridge;
-import org.spongepowered.common.bridge.permissions.SubjectBridge;
-
-import javax.annotation.Nullable;
 
 @Mixin(RConConsoleSource.class)
 public abstract class RConConsoleSourceMixin implements CommandSourceProviderBridge {

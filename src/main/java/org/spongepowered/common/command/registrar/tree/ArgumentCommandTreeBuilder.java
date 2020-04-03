@@ -25,12 +25,21 @@
 package org.spongepowered.common.command.registrar.tree;
 
 import com.google.gson.JsonObject;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.tree.CommandNode;
+import net.minecraft.command.CommandSource;
 import net.minecraft.network.PacketBuffer;
+import org.spongepowered.api.command.parameter.managed.standard.CatalogedValueParameter;
 import org.spongepowered.api.command.registrar.tree.ClientCompletionKey;
 import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
+import org.spongepowered.common.SpongeImpl;
+import org.spongepowered.common.command.brigadier.argument.SpongeArgumentTypeAdapter;
 import org.spongepowered.common.util.Constants;
 
-public class ArgumentCommandTreeBuilder<T extends CommandTreeBuilder<T>> extends AbstractCommandTreeBuilder<T> {
+public class ArgumentCommandTreeBuilder<T extends CommandTreeBuilder<T>>
+        extends AbstractCommandTreeBuilder<T, CommandNode<CommandSource>> {
 
     private final ClientCompletionKey<T> parameterType;
 
@@ -47,6 +56,31 @@ public class ArgumentCommandTreeBuilder<T extends CommandTreeBuilder<T>> extends
     @Override
     public byte getNodeMask() {
         return (byte) (Constants.Command.ARGUMENT_NODE_BIT | this.customSuggestionsMask());
+    }
+
+    @Override
+    protected final CommandNode<CommandSource> createArgumentTree(String nodeKey, Command<CommandSource> command) {
+        ArgumentType<T> type = getArgumentType();
+        RequiredArgumentBuilder<CommandSource, T> builder = RequiredArgumentBuilder.argument(nodeKey, type);
+        this.applySpecificsToNode(builder);
+        this.addChildNodesToTree(builder, command);
+        return builder.build();
+    }
+
+    @SuppressWarnings("unchecked")
+    protected ArgumentType<T> getArgumentType() {
+        return ((SpongeArgumentTypeAdapter<T>) SpongeImpl.getRegistry().getCatalogRegistry()
+                .get(CatalogedValueParameter.class, this.parameterType.getKey())
+                .orElseThrow(() -> new IllegalStateException("ID " + this.parameterType.getKey().toString() + " could not be found.")))
+                .getUnderlyingType();
+    }
+
+    /**
+     * Applies any specific requirements that the tree builder indicates.
+     *
+     * @param node The node to apply to
+     */
+    protected void applySpecificsToNode(RequiredArgumentBuilder<CommandSource, T> node) {
     }
 
     private byte customSuggestionsMask() {
