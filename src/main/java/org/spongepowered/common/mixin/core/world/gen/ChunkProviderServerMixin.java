@@ -34,6 +34,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.IChunkLoader;
 import net.minecraft.world.gen.ChunkProviderServer;
 import net.minecraft.world.gen.IChunkGenerator;
+import org.spongepowered.api.event.SpongeEventFactory;
 import org.spongepowered.api.world.SerializationBehaviors;
 import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.asm.mixin.Final;
@@ -42,7 +43,6 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -57,6 +57,7 @@ import org.spongepowered.common.bridge.world.chunk.ChunkBridge;
 import org.spongepowered.common.bridge.world.chunk.ChunkProviderBridge;
 import org.spongepowered.common.bridge.world.chunk.ChunkProviderServerBridge;
 import org.spongepowered.common.config.category.WorldCategory;
+import org.spongepowered.common.event.ShouldFire;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.PhaseTracker;
@@ -324,5 +325,16 @@ public abstract class ChunkProviderServerMixin implements ChunkProviderServerBri
 
         this.loadedChunks.remove(ChunkPos.asLong(chunk.x, chunk.z));
         ((ChunkBridge) chunk).bridge$setScheduledForUnload(-1);
+    }
+
+    @Inject(method = "saveChunkData", at = @At("HEAD"), cancellable = true)
+    private void impl$callSaveChunkEventPre(Chunk chunkIn, CallbackInfo ci) {
+        if (ShouldFire.SAVE_CHUNK_EVENT || ShouldFire.SAVE_CHUNK_EVENT_PRE) {
+            final org.spongepowered.api.world.Chunk apiChunk = (org.spongepowered.api.world.Chunk) chunkIn;
+            if (SpongeImpl.postEvent(SpongeEventFactory.createSaveChunkEventPre(SpongeImpl.getCauseStackManager().getCurrentCause(),
+                apiChunk.getPosition(), apiChunk))) {
+                ci.cancel();
+            }
+        }
     }
 }
