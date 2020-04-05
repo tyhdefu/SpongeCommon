@@ -29,6 +29,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.CommandSource;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.CatalogKey;
@@ -42,6 +43,7 @@ import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.command.registrar.CommandRegistrar;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.util.Tuple;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.bridge.brigadier.tree.RootCommandNodeBridge;
 import org.spongepowered.common.command.manager.SpongeCommandManager;
@@ -82,14 +84,10 @@ public abstract class SpongeCommandRegistrar<T extends Command> implements Comma
             throw new CommandFailedRegistrationException("The primary alias " + primaryAlias + " has already been registered.");
         }
 
-        VanillaCommandRegistrar.INSTANCE.registerInternal(this, container, createNode(primaryAlias.toLowerCase(), command));
-        this.commandMap.put(primaryAlias, command);
-        return new SpongeCommandMapping(
-                primaryAlias,
-                ImmutableSet.copyOf(secondaryAliases),
-                container,
-                this
-        );
+        Tuple<CommandMapping, LiteralCommandNode<CommandSource>> mappingResult =
+                BrigadierCommandRegistrar.INSTANCE
+                        .registerInternal(this, container, secondaryAliases, createNode(primaryAlias.toLowerCase(), command));
+        return mappingResult.getFirst();
     }
 
     @NonNull
@@ -128,6 +126,7 @@ public abstract class SpongeCommandRegistrar<T extends Command> implements Comma
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void unregister(@NonNull final CommandMapping mapping) {
         if (Sponge.getCommandManager().isRegistered(mapping)) {
             this.commandMap.remove(mapping.getPrimaryAlias());

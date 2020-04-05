@@ -43,7 +43,7 @@ import static org.spongepowered.common.util.SpongeCommonTranslationHelper.t;
 import com.google.common.reflect.TypeToken;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.common.command.args.FilteredPluginsCommandElement;
-import org.spongepowered.common.command.manager.SpongeCommandDispatcher;
+import org.spongepowered.common.command.brigadier.SpongeCommandDispatcher;
 import org.spongepowered.common.relocate.co.aikar.timings.SpongeTimingsFactory;
 import co.aikar.timings.Timings;
 import com.google.common.collect.ImmutableList;

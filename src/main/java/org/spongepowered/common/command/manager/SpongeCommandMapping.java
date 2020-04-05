@@ -25,19 +25,16 @@
 package org.spongepowered.common.command.manager;
 
 import com.google.common.collect.ImmutableSet;
+import com.mojang.brigadier.tree.CommandNode;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.CommandSource;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.spongepowered.api.command.Command;
-import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.command.registrar.CommandRegistrar;
-import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.plugin.PluginContainer;
 
-import java.util.Optional;
+import java.util.Collection;
 import java.util.Set;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
 
 public class SpongeCommandMapping implements CommandMapping {
 

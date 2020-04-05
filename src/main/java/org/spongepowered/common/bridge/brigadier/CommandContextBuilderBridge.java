@@ -24,27 +24,12 @@
  */
 package org.spongepowered.common.bridge.brigadier;
 
-import com.mojang.brigadier.RedirectModifier;
 import com.mojang.brigadier.context.ParsedArgument;
-import com.mojang.brigadier.context.StringRange;
-import com.mojang.brigadier.tree.CommandNode;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 public interface CommandContextBuilderBridge<S> {
 
-    void bridge$setRedirectModifier(@Nullable RedirectModifier<S> redirectModifier);
-
-    void bridge$setFork(boolean fork);
-
-    void bridge$setStringRange(StringRange range);
-
     void bridge$putArguments(Map<String, ParsedArgument<S, ?>> arguments);
-
-    @Nullable RedirectModifier<S> bridge$getRedirectModifier();
-
-    boolean bridge$isForks();
 
 }

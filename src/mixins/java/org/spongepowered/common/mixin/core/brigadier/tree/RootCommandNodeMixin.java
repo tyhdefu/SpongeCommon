@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.common.accessor.brigadier.tree.CommandNodeAccessor;
 import org.spongepowered.common.bridge.brigadier.tree.RootCommandNodeBridge;
 
-@Mixin(RootCommandNode.class)
+@Mixin(value = RootCommandNode.class, remap = false)
 public abstract class RootCommandNodeMixin<S> extends CommandNodeMixin<S> implements RootCommandNodeBridge<S> {
 
     @Override

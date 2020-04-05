@@ -25,16 +25,21 @@
 package org.spongepowered.common.command.brigadier.tree;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.command.CommandSource;
 import org.spongepowered.api.command.CommandExecutor;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.common.command.brigadier.context.SpongeCommandContext;
+import org.spongepowered.common.command.exception.SpongeCommandSyntaxException;
+import org.spongepowered.common.text.SpongeTexts;
 
 public class SpongeCommandExecutorWrapper implements Command<CommandSource> {
 
-    private static final Text ERROR_MESSAGE = Text.of(TextColors.RED, "Error running command: ");
     private final CommandExecutor executor;
 
     public SpongeCommandExecutorWrapper(CommandExecutor executor) {
@@ -42,15 +47,13 @@ public class SpongeCommandExecutorWrapper implements Command<CommandSource> {
     }
 
     @Override
-    public int run(CommandContext<CommandSource> context) {
+    public int run(CommandContext<CommandSource> context) throws CommandSyntaxException {
+        SpongeCommandContext spongeCommandContext = (SpongeCommandContext) context;
         try {
-            return this.executor.execute((org.spongepowered.api.command.parameter.CommandContext) context).getResult();
+            return this.executor.execute(spongeCommandContext).getResult();
         } catch (CommandException e) {
-            // Print the error message here
-            ((org.spongepowered.api.command.parameter.CommandContext) context).getMessageChannel().send(Text.of(ERROR_MESSAGE, e.getText()));
-
-            // Now return zero, as required by Brigadier.
-            return 0;
+            throw new SpongeCommandSyntaxException(e, spongeCommandContext);
         }
     }
+
 }

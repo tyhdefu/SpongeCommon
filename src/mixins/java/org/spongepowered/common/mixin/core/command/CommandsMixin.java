@@ -26,30 +26,13 @@ package org.spongepowered.common.mixin.core.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
-import net.minecraft.command.ICommandSource;
-import net.minecraft.command.ISuggestionProvider;
-import net.minecraft.command.arguments.SuggestionProviders;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.command.CommandCause;
-import org.spongepowered.api.command.registrar.CommandRegistrar;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.common.SpongeImpl;
-import org.spongepowered.common.command.manager.SpongeCommandDispatcher;
-import org.spongepowered.common.command.manager.SpongeCommandManager;
-import org.spongepowered.common.command.registrar.VanillaCommandRegistrar;
-import org.spongepowered.common.command.registrar.tree.RootCommandTreeBuilder;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.spongepowered.common.command.brigadier.SpongeCommandDispatcher;
 
 @Mixin(Commands.class)
 public abstract class CommandsMixin {

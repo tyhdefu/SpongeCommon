@@ -33,17 +33,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.CatalogKey;
 import org.spongepowered.api.command.Command;
 import org.spongepowered.api.command.CommandCause;
 import org.spongepowered.api.command.exception.CommandException;
-import org.spongepowered.api.command.registrar.tree.ClientCompletionKeys;
-import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
 import org.spongepowered.common.SpongeImpl;
-import org.spongepowered.common.command.exception.CommandRuntimeException;
+import org.spongepowered.common.command.brigadier.context.SpongeCommandContext;
+import org.spongepowered.common.command.exception.SpongeCommandSyntaxException;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -73,22 +70,6 @@ public class SpongeRawCommandRegistrar extends SpongeCommandRegistrar<Command> {
                 );
     }
 
-    @Override
-    public void completeCommandTree(@NonNull final CommandCause commandCause, final CommandTreeBuilder.@NonNull Basic builder) {
-        for (final Map.Entry<String, Command> command : this.getCommandMap().entrySet()) {
-            if (command.getValue().canExecute(commandCause)) {
-                builder.child(command.getKey(), emptyCommandTreeBuilder ->
-                        emptyCommandTreeBuilder.executable()
-                                .child(PARAMETER_NAME, ClientCompletionKeys.STRING, stringParserCommandTreeBuilder -> {
-                                    stringParserCommandTreeBuilder
-                                            .executable()
-                                            .type(CommandTreeBuilder.StringParser.Types.GREEDY);
-                                })
-                                .customSuggestions());
-            }
-        }
-    }
-
     private static class Executor implements com.mojang.brigadier.Command<CommandSource> {
 
         private final Command command;
@@ -110,7 +91,7 @@ public class SpongeRawCommandRegistrar extends SpongeCommandRegistrar<Command> {
             try {
                 return command.process((CommandCause) context.getSource(), argument).getResult();
             } catch (CommandException e) {
-                throw new CommandRuntimeException(e.getText(), e);
+                throw new SpongeCommandSyntaxException(e, (SpongeCommandContext) context);
             }
         }
     }

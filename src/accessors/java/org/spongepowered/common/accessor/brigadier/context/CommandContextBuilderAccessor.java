@@ -22,30 +22,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.command.registrar;
+package org.spongepowered.common.accessor.brigadier.context;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.command.CommandSource;
-import org.spongepowered.api.CatalogKey;
-import org.spongepowered.api.command.Command;
-import org.spongepowered.common.SpongeImpl;
+import com.mojang.brigadier.RedirectModifier;
+import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.context.StringRange;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-/**
- * For use with {@link org.spongepowered.api.command.Command.Parameterized}
- */
-public class SpongeManagedCommandRegistrar extends SpongeCommandRegistrar<Command.Parameterized> {
+import javax.annotation.Nullable;
 
-    public static final CatalogKey CATALOG_KEY = CatalogKey.builder().namespace(SpongeImpl.getSpongePlugin()).value("managed").build();
-    public static final SpongeManagedCommandRegistrar INSTANCE = new SpongeManagedCommandRegistrar(CATALOG_KEY);
+@Mixin(CommandContextBuilder.class)
+public interface CommandContextBuilderAccessor<S> {
 
-    private SpongeManagedCommandRegistrar(final CatalogKey catalogKey) {
-        super(catalogKey);
-    }
+    @Accessor("modifier")
+    void accessor$setModifier(@Nullable RedirectModifier<S> redirectModifier);
 
-    @Override
-    LiteralArgumentBuilder<CommandSource> createNode(final String primaryAlias, final Command.Parameterized command) {
+    @Accessor("forks")
+    void accessor$setForks(boolean fork);
 
-        return null;
-    }
+    @Accessor("range")
+    void accessor$setStringRange(StringRange range);
+
+    @Accessor("modifier")
+    @Nullable
+    RedirectModifier<S> accessor$getModifier();
+
+    @Accessor("forks")
+    boolean accessor$isForks();
+
 
 }

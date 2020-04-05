@@ -32,8 +32,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.ICommandSource;
-import net.minecraft.command.arguments.ArgumentTypes;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.CatalogKey;
 import org.spongepowered.api.Sponge;
@@ -42,14 +40,12 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.exception.CommandException;
 import org.spongepowered.api.command.manager.CommandMapping;
 import org.spongepowered.api.command.registrar.CommandRegistrar;
-import org.spongepowered.api.command.registrar.tree.CommandTreeBuilder;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.util.Tuple;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.bridge.brigadier.builder.ArgumentBuilderBridge;
 import org.spongepowered.common.bridge.brigadier.tree.RootCommandNodeBridge;
-import org.spongepowered.common.command.CommandHelper;
-import org.spongepowered.common.command.registrar.tree.CommandTreeHelper;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,14 +53,20 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import javax.activation.CommandMap;
+/**
+ * This is used for vanilla commands and mods, but can also be used by
+ * frameworks that simply output Brig nodes (or just use Brig on its own!)
+ *
+ * <p>Such command registrations should simply use the
+ * {@link #register(PluginContainer, LiteralArgumentBuilder, String...)}
+ * method.</p>
+ */
+public class BrigadierCommandRegistrar implements CommandRegistrar {
 
-public class VanillaCommandRegistrar implements CommandRegistrar {
-
-    public static final VanillaCommandRegistrar INSTANCE = new VanillaCommandRegistrar();
+    public static final BrigadierCommandRegistrar INSTANCE = new BrigadierCommandRegistrar();
     public static final CatalogKey CATALOG_KEY = CatalogKey.builder().namespace(SpongeImpl.getMinecraftPlugin()).value("brigadier").build();
 
-    private VanillaCommandRegistrar() {}
+    private BrigadierCommandRegistrar() {}
 
     // For mods and others that use this. We get the plugin container from the CauseStack
     // TODO: Make sure this is valid. For Forge, I suspect we'll have done this in a context of some sort.
@@ -73,21 +75,39 @@ public class VanillaCommandRegistrar implements CommandRegistrar {
         PluginContainer container = Sponge.getCauseStackManager().getCurrentCause().first(PluginContainer.class)
                 .orElseThrow(() -> new IllegalStateException("Cannot register command without knowing its origin."));
 
-        return registerInternal(this, container, command, true);
+        return registerInternal(this, container, command, new String[0], true).getSecond();
     }
 
-    LiteralCommandNode<CommandSource> registerInternal(
+    /**
+     * Entry point for brigadier based commands that are Sponge aware, such that
+     * they will not have any other permission checks imposed upon them.
+     *
+     * @param container The {@link PluginContainer} of the registering plugin
+     * @param command The {@link LiteralArgumentBuilder} to register
+     * @param secondaryAliases Any aliases should be registered (they will be registered as a redirection)
+     * @return The built {@link LiteralCommandNode}.
+     */
+    public Tuple<CommandMapping, LiteralCommandNode<CommandSource>> register(
+            final PluginContainer container,
+            final LiteralArgumentBuilder<CommandSource> command,
+            final String... secondaryAliases) {
+        return registerInternal(this, container, command, secondaryAliases,false);
+    }
+
+    Tuple<CommandMapping, LiteralCommandNode<CommandSource>> registerInternal(
             final CommandRegistrar registrar,
             final PluginContainer container,
+            final String[] secondaryAliases,
             final LiteralArgumentBuilder<CommandSource> command) {
-        return registerInternal(registrar, container, command, false);
+        return registerInternal(registrar, container, command, secondaryAliases, false);
     }
 
     @SuppressWarnings("unchecked")
-    private LiteralCommandNode<CommandSource> registerInternal(
+    private Tuple<CommandMapping, LiteralCommandNode<CommandSource>> registerInternal(
             final CommandRegistrar registrar,
             final PluginContainer container,
             final LiteralArgumentBuilder<CommandSource> command,
+            final String[] secondaryAliases,
             boolean updateRequirement) {
 
         // Get the builder and the first literal.
@@ -97,7 +117,8 @@ public class VanillaCommandRegistrar implements CommandRegistrar {
         CommandMapping mapping = SpongeImpl.getCommandManager().registerAlias(
                         registrar,
                         container,
-                        command
+                        command,
+                        secondaryAliases
                 );
 
         final LiteralArgumentBuilder<CommandSource> literalToRegister;
@@ -126,7 +147,7 @@ public class VanillaCommandRegistrar implements CommandRegistrar {
             }
         }
 
-        return builtNode;
+        return Tuple.of(mapping, builtNode);
     }
 
     @Override
@@ -169,11 +190,6 @@ public class VanillaCommandRegistrar implements CommandRegistrar {
             ((RootCommandNodeBridge<CommandSource>) getDispatcher().getRoot())
                     .bridge$removeNode(getDispatcher().getRoot().getChild(mapping.getPrimaryAlias()));
         }
-    }
-
-    @Override
-    public void completeCommandTree(@NonNull final CommandCause commandCause, final CommandTreeBuilder.@NonNull Basic builder) {
-        CommandTreeHelper.fromJson(builder, ArgumentTypes.serialize(getDispatcher(), getDispatcher().getRoot()));
     }
 
     @Override

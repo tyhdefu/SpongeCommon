@@ -55,6 +55,7 @@ import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.channel.MessageReceiver;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.common.SpongeImpl;
+import org.spongepowered.common.command.brigadier.SpongeCommandDispatcher;
 import org.spongepowered.common.command.registrar.SpongeManagedCommandRegistrar;
 import org.spongepowered.common.command.registrar.SpongeRawCommandRegistrar;
 import org.spongepowered.common.command.registrar.tree.RootCommandTreeBuilder;

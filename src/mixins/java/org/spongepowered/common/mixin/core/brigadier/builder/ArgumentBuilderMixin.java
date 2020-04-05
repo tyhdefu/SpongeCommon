@@ -36,7 +36,7 @@ import org.spongepowered.common.bridge.brigadier.builder.ArgumentBuilderBridge;
 
 import java.util.function.Predicate;
 
-@Mixin(ArgumentBuilder.class)
+@Mixin(value = ArgumentBuilder.class, remap = false)
 public abstract class ArgumentBuilderMixin<S, T extends ArgumentBuilder<S, T>> implements ArgumentBuilderBridge<S, T> {
 
     @Shadow @Final private RootCommandNode<S> arguments;

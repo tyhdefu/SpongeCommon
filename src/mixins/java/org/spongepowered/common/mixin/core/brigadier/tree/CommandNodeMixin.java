@@ -27,7 +27,7 @@ package org.spongepowered.common.mixin.core.brigadier.tree;
 import com.google.common.base.Preconditions;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
-import jdk.internal.org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -36,7 +36,7 @@ import org.spongepowered.common.accessor.brigadier.tree.CommandNodeAccessor;
 
 import java.util.Arrays;
 
-@Mixin(CommandNode.class)
+@Mixin(value = CommandNode.class, remap = false)
 public abstract class CommandNodeMixin<S> implements CommandNodeBridge<S> {
 
     private String impl$stringRedirect;

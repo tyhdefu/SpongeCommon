@@ -26,6 +26,7 @@ package org.spongepowered.common.command.brigadier.context;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContextBuilder;
@@ -36,6 +37,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.api.command.CommandCause;
 import org.spongepowered.api.command.parameter.Parameter;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.common.accessor.brigadier.context.CommandContextBuilderAccessor;
 import org.spongepowered.common.bridge.brigadier.CommandContextBuilderBridge;
 import org.spongepowered.common.command.parameter.SpongeParameterKey;
 
@@ -49,24 +51,6 @@ import java.util.Optional;
 public class SpongeCommandContextBuilder extends CommandContextBuilder<CommandSource>
         implements org.spongepowered.api.command.parameter.CommandContext.Builder {
 
-    public static SpongeCommandContextBuilder createFrom(CommandContextBuilder<CommandSource> original) {
-        final SpongeCommandContextBuilder copy =
-                new SpongeCommandContextBuilder(
-                        original.getDispatcher(),
-                        original.getSource(),
-                        original.getRootNode(),
-                        original.getRange().getStart());
-        CommandContextBuilderBridge<CommandSource> mixinCommandContextBuilder = (CommandContextBuilderBridge<CommandSource>) original;
-        CommandContextBuilderBridge<CommandSource> copyMixinCommandContextBuilder = (CommandContextBuilderBridge<CommandSource>) copy;
-        copy.withChild(original.getChild());
-        copy.withCommand(original.getCommand());
-        copyMixinCommandContextBuilder.bridge$putArguments(original.getArguments());
-        copyMixinCommandContextBuilder.bridge$setRedirectModifier(mixinCommandContextBuilder.bridge$getRedirectModifier());
-        copyMixinCommandContextBuilder.bridge$setFork(mixinCommandContextBuilder.bridge$isForks());
-        copyMixinCommandContextBuilder.bridge$setStringRange(copy.getRange());
-        return copy;
-    }
-
     // The Sponge command system allows for multiple arguments to be stored under the same key.
     private final HashMap<Parameter.Key<?>, Collection<?>> arguments = new HashMap<>();
 
@@ -76,6 +60,20 @@ public class SpongeCommandContextBuilder extends CommandContextBuilder<CommandSo
             CommandNode<CommandSource> root,
             int start) {
         super(dispatcher, source, root, start);
+    }
+
+    @SuppressWarnings("unchecked")
+    public SpongeCommandContextBuilder(CommandContextBuilder<CommandSource> original) {
+        super(original.getDispatcher(), original.getSource(), original.getRootNode(), original.getRange().getStart());
+        CommandContextBuilderBridge<CommandSource> copyMixinCommandContextBuilder = (CommandContextBuilderBridge<CommandSource>) this;
+        CommandContextBuilderAccessor<CommandSource> accessorCommandContextBuilder = (CommandContextBuilderAccessor<CommandSource>) original;
+        CommandContextBuilderAccessor<CommandSource> copyAccessorCommandContextBuilder = (CommandContextBuilderAccessor<CommandSource>) this;
+        this.withChild(original.getChild());
+        this.withCommand(original.getCommand());
+        copyMixinCommandContextBuilder.bridge$putArguments(original.getArguments());
+        copyAccessorCommandContextBuilder.accessor$setModifier(accessorCommandContextBuilder.accessor$getModifier());
+        copyAccessorCommandContextBuilder.accessor$setForks(accessorCommandContextBuilder.accessor$isForks());
+        copyAccessorCommandContextBuilder.accessor$setStringRange(this.getRange());
     }
 
     @Override
@@ -99,7 +97,7 @@ public class SpongeCommandContextBuilder extends CommandContextBuilder<CommandSo
     }
 
     public SpongeCommandContextBuilder copy() {
-        final SpongeCommandContextBuilder copy = createFrom(this);
+        final SpongeCommandContextBuilder copy = new SpongeCommandContextBuilder(this);
         copy.arguments.putAll(this.arguments);
         return copy;
     }
@@ -174,10 +172,11 @@ public class SpongeCommandContextBuilder extends CommandContextBuilder<CommandSo
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public SpongeCommandContext build(@NonNull final String input) {
         final CommandContextBuilder<CommandSource> child = getChild();
         // TODO: this might not be needed for the derived class, come back when mixins are working
-        final CommandContextBuilderBridge<CommandSource> mixinCommandContextBuilder = (CommandContextBuilderBridge<CommandSource>) this;
+        final CommandContextBuilderAccessor<CommandSource> mixinCommandContextBuilder = (CommandContextBuilderAccessor<CommandSource>) this;
         return new SpongeCommandContext(
                 getSource(),
                 input,
@@ -187,8 +186,8 @@ public class SpongeCommandContextBuilder extends CommandContextBuilder<CommandSo
                 getNodes(),
                 getRange(),
                 child == null ? null : child.build(input),
-                mixinCommandContextBuilder.bridge$getRedirectModifier(),
-                mixinCommandContextBuilder.bridge$isForks());
+                mixinCommandContextBuilder.accessor$getModifier(),
+                mixinCommandContextBuilder.accessor$isForks());
     }
 
     @Override

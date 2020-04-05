@@ -28,25 +28,37 @@ import static org.spongepowered.common.util.SpongeCommonTranslationHelper.t;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.command.exception.ArgumentParseException;
 import org.spongepowered.api.command.parameter.ArgumentReader;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.common.command.brigadier.context.SpongeCommandContextBuilder;
 
+// ArgumentReader.Mutable specifies a non null getRead() method, StringReader suggests its
+// nullable - but it isn't. So we just need to suppress the warning.
+@SuppressWarnings("NullableProblems")
 public class SpongeStringReader extends StringReader implements ArgumentReader.Mutable {
 
     private static final char SYNTAX_QUOTE = '"';
 
-    private final SpongeCommandContextBuilder commandContextBuilder;
+    @Nullable private SpongeCommandContextBuilder commandContextBuilder;
 
-    public SpongeStringReader(String string, SpongeCommandContextBuilder commandContextBuilder) {
+    public SpongeStringReader(String string, @Nullable SpongeCommandContextBuilder commandContextBuilder) {
         super(string);
         this.commandContextBuilder = commandContextBuilder;
     }
 
-    public SpongeStringReader(StringReader other, SpongeCommandContextBuilder commandContextBuilder) {
+    public SpongeStringReader(StringReader other, @Nullable SpongeCommandContextBuilder commandContextBuilder) {
         super(other);
         this.commandContextBuilder = commandContextBuilder;
+    }
+
+    // Used because we do a redirect to redirect the creation of a string reader,
+    // only to then need to apply a new context (can't get LVT during redirect).
+    public void reapplyContextBuilder(SpongeCommandContextBuilder contextBuilder) {
+        if (this.commandContextBuilder == null) {
+            this.commandContextBuilder = contextBuilder;
+        }
     }
 
     // Sorry Mojang...

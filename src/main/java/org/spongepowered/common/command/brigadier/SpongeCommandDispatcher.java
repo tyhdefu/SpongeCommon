@@ -22,13 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.command.manager;
+package org.spongepowered.common.command.brigadier;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.CommandSource;
-import org.spongepowered.common.command.registrar.VanillaCommandRegistrar;
+import org.spongepowered.common.accessor.brigadier.CommandDispatcherAccessor;
+import org.spongepowered.common.command.brigadier.context.SpongeCommandContextBuilder;
+import org.spongepowered.common.command.registrar.BrigadierCommandRegistrar;
 
 // This is a wrapper as we're going to trust the mods are not going to try to hijack this.
 // If they did, their commands would not get called.
@@ -39,12 +44,37 @@ public class SpongeCommandDispatcher extends CommandDispatcher<CommandSource> {
 
     @Override
     public LiteralCommandNode<CommandSource> register(LiteralArgumentBuilder<CommandSource> command) {
-        return VanillaCommandRegistrar.INSTANCE.register(command);
+        return BrigadierCommandRegistrar.INSTANCE.register(command);
     }
 
     // Yup. It is what it is.
     public LiteralCommandNode<CommandSource> registerInternal(LiteralArgumentBuilder<CommandSource> command) {
         return super.register(command);
+    }
+
+    @Override
+    public ParseResults<CommandSource> parse(String command, CommandSource source) {
+        SpongeCommandContextBuilder builder = new SpongeCommandContextBuilder(this, source, this.getRoot(), 0);
+        SpongeStringReader reader = new SpongeStringReader(command, builder);
+        return this.parse(reader);
+    }
+
+    @Override
+    public ParseResults<CommandSource> parse(StringReader command, CommandSource source) {
+        SpongeCommandContextBuilder builder = new SpongeCommandContextBuilder(this, source, this.getRoot(), command.getCursor());
+        SpongeStringReader reader = new SpongeStringReader(command, builder);
+        return this.parse(reader);
+    }
+
+    // This is simply to avoid object creation - a second string reader.
+    @Override
+    public int execute(String input, CommandSource source) throws CommandSyntaxException {
+        return this.execute(parse(input, source));
+    }
+
+    @SuppressWarnings("unchecked")
+    private ParseResults<CommandSource> parse(final SpongeStringReader reader) {
+        return ((CommandDispatcherAccessor<CommandSource>) this).accessor$parseNodes(this.getRoot(), reader, reader.getCommandContextBuilder());
     }
 
 }

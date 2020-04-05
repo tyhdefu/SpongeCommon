@@ -22,26 +22,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.command.exception;
+package org.spongepowered.common.accessor.brigadier;
 
-import org.spongepowered.api.text.Text;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.tree.CommandNode;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
-public class CommandRuntimeException extends RuntimeException {
+@Mixin(value = CommandDispatcher.class, remap = false)
+public interface CommandDispatcherAccessor<S> {
 
-    private final Text errorMessage;
-
-    public CommandRuntimeException(Text errorMessage) {
-        super(errorMessage.toPlain());
-        this.errorMessage = errorMessage;
-    }
-
-    public CommandRuntimeException(Text errorMessage, Throwable inner) {
-        super(errorMessage.toPlain(), inner);
-        this.errorMessage = errorMessage;
-    }
-
-    public Text getErrorMessage() {
-        return this.errorMessage;
-    }
+    @Invoker("parseNodes")
+    ParseResults<S> accessor$parseNodes(final CommandNode<S> node, final StringReader originalReader, final CommandContextBuilder<S> contextSoFar);
 
 }
