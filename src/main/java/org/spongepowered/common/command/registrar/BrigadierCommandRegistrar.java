@@ -46,6 +46,7 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.bridge.brigadier.builder.ArgumentBuilderBridge;
 import org.spongepowered.common.bridge.brigadier.tree.RootCommandNodeBridge;
+import org.spongepowered.common.command.brigadier.SpongeCommandDispatcher;
 
 import java.util.Collections;
 import java.util.List;
@@ -137,7 +138,8 @@ public class BrigadierCommandRegistrar implements CommandRegistrar {
             literalToRegister.requires(command.getRequirement().and(commandSource -> ((CommandCause) commandSource).getSubject().hasPermission(permission)));
         }
 
-        LiteralCommandNode<CommandSource> builtNode = SpongeImpl.getServer().getCommandManager().getDispatcher().register(literalToRegister);
+        LiteralCommandNode<CommandSource> builtNode =
+                ((SpongeCommandDispatcher) SpongeImpl.getServer().getCommandManager().getDispatcher()).registerInternal(literalToRegister);
 
         // Redirect aliases
         for (String alias : mapping.getAllAliases()) {

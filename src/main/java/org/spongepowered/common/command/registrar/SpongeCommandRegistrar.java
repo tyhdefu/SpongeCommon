@@ -24,7 +24,6 @@
  */
 package org.spongepowered.common.command.registrar;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -47,7 +46,6 @@ import org.spongepowered.api.util.Tuple;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.bridge.brigadier.tree.RootCommandNodeBridge;
 import org.spongepowered.common.command.manager.SpongeCommandManager;
-import org.spongepowered.common.command.manager.SpongeCommandMapping;
 
 import java.util.Collections;
 import java.util.List;
