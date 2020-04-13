@@ -22,30 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.data.provider.block.location;
+package org.spongepowered.common.data.provider.item.stack;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.LightType;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import org.spongepowered.api.data.Keys;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.common.data.provider.GenericMutableDataProvider;
-import org.spongepowered.common.util.VecHelper;
+import org.spongepowered.common.data.provider.item.ItemStackDataProvider;
 
 import java.util.Optional;
 
-public class SkyLuminanceProvider extends GenericMutableDataProvider<Location, Integer> {
+public class ItemStackMaxDurabilityProvider extends ItemStackDataProvider<Integer> {
 
-    public SkyLuminanceProvider() {
-        super(Keys.SKY_LIGHT);
+    public ItemStackMaxDurabilityProvider() {
+        super(Keys.MAX_DURABILITY);
     }
 
     @Override
-    protected Optional<Integer> getFrom(Location dataHolder) {
-        World world = (World) dataHolder.getWorld();
-        BlockPos pos = VecHelper.toBlockPos(dataHolder);
-        int lightFor = world.getLightFor(LightType.SKY, pos);
-        return Optional.of(lightFor);
+    protected Optional<Integer> getFrom(ItemStack dataHolder) {
+        Item item = dataHolder.getItem();
+        if (item.isDamageable()) {
+            return Optional.of(item.getMaxDamage());
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    protected boolean supports(Item item) {
+        return item.isDamageable();
     }
 }

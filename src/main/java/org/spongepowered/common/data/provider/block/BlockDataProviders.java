@@ -223,13 +223,13 @@ public class BlockDataProviders extends DataProviderRegistryBuilder {
         // TODO: Part
 
         // HugeMushroomBlock
-        registerBoolean(HugeMushroomBlock.class, Keys.BIG_MUSHROOM_PORES_EAST, HugeMushroomBlock.EAST);
-        registerBoolean(HugeMushroomBlock.class, Keys.BIG_MUSHROOM_PORES_WEST, HugeMushroomBlock.WEST);
-        registerBoolean(HugeMushroomBlock.class, Keys.BIG_MUSHROOM_PORES_NORTH, HugeMushroomBlock.NORTH);
-        registerBoolean(HugeMushroomBlock.class, Keys.BIG_MUSHROOM_PORES_SOUTH, HugeMushroomBlock.SOUTH);
-        registerBoolean(HugeMushroomBlock.class, Keys.BIG_MUSHROOM_PORES_UP, HugeMushroomBlock.UP);
-        registerBoolean(HugeMushroomBlock.class, Keys.BIG_MUSHROOM_PORES_DOWN, HugeMushroomBlock.DOWN);
-        register(new BlockDirectionalSetProvider(Keys.BIG_MUSHROOM_PORES, HugeMushroomBlock.class,
+        registerBoolean(HugeMushroomBlock.class, Keys.PORES_EAST, HugeMushroomBlock.EAST);
+        registerBoolean(HugeMushroomBlock.class, Keys.PORES_WEST, HugeMushroomBlock.WEST);
+        registerBoolean(HugeMushroomBlock.class, Keys.PORES_NORTH, HugeMushroomBlock.NORTH);
+        registerBoolean(HugeMushroomBlock.class, Keys.PORES_SOUTH, HugeMushroomBlock.SOUTH);
+        registerBoolean(HugeMushroomBlock.class, Keys.PORES_UP, HugeMushroomBlock.UP);
+        registerBoolean(HugeMushroomBlock.class, Keys.PORES_DOWN, HugeMushroomBlock.DOWN);
+        register(new BlockDirectionalSetProvider(Keys.PORES, HugeMushroomBlock.class,
                 ImmutableMap.<Direction, BooleanProperty>builder()
                         .put(Direction.EAST, HugeMushroomBlock.EAST)
                         .put(Direction.WEST, HugeMushroomBlock.WEST)
@@ -377,7 +377,7 @@ public class BlockDataProviders extends DataProviderRegistryBuilder {
         registerBoolean(RedstoneTorchBlock.class, Keys.LIT, RedstoneTorchBlock.LIT);
 
         // RepeaterBlock
-        registerBoundedInt(RepeaterBlock.class, Keys.DELAY, RepeaterBlock.DELAY);
+        registerBoundedInt(RepeaterBlock.class, Keys.REDSTONE_DELAY, RepeaterBlock.DELAY);
 
         // RotatedPillarBlock
         register(new AxisBlockAxisProvider(RotatedPillarBlock.class, RotatedPillarBlock.AXIS));
@@ -392,7 +392,7 @@ public class BlockDataProviders extends DataProviderRegistryBuilder {
         registerBoundedInt(SnowBlock.class, Keys.LAYER, SnowBlock.LAYERS);
 
         // SnowyDirtBlock
-        registerBoolean(SnowyDirtBlock.class, Keys.SNOWED, SnowyDirtBlock.SNOWY);
+        registerBoolean(SnowyDirtBlock.class, Keys.SNOWY, SnowyDirtBlock.SNOWY);
 
         // SpongeBlock
         register(new SpongeBlockIsWetProvider());

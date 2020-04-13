@@ -92,11 +92,11 @@ public class TileEntityDataProviders extends DataProviderRegistryBuilder {
         register(new BannerTileEntityBaseColorProvider());
 //        register(new BannerTileEntityPatternsProvider());
 
-        register(new BeaconTileEntityEffectProvider(Keys.BEACON_PRIMARY_EFFECT.get(),
+        register(new BeaconTileEntityEffectProvider(Keys.PRIMARY_EFFECT.get(),
                 BeaconTileEntityAccessor::accessor$getPrimaryEffect,
                 BeaconTileEntityAccessor::accessor$setPrimaryEffect));
 
-        register(new BeaconTileEntityEffectProvider(Keys.BEACON_SECONDARY_EFFECT.get(),
+        register(new BeaconTileEntityEffectProvider(Keys.SECONDARY_EFFECT.get(),
                 BeaconTileEntityAccessor::accessor$getSecondaryEffect,
                 BeaconTileEntityAccessor::accessor$setSecondaryEffect));
     }
@@ -119,13 +119,13 @@ public class TileEntityDataProviders extends DataProviderRegistryBuilder {
                 (accessor) -> VecHelper.toVector3d(accessor.accessor$getExitPortal()),
                 (accessor, value) -> accessor.accessor$setExitPortal(VecHelper.toBlockPos(value)));
 
-        register(EndGatewayTileEntityAccessor.class, Keys.END_GATEWAY_TELEPORT_COOLDOWN,
+        register(EndGatewayTileEntityAccessor.class, Keys.COOLDOWN,
                 EndGatewayTileEntityAccessor::accessor$getTeleportCooldown,
                 EndGatewayTileEntityAccessor::accessor$setTeleportCooldown);
     }
 
     private void registerMobSpawnerEntityData() {
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_ENTITIES,
+        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNABLE_ENTITIES,
                 (accessor) -> SpawnerUtils.getEntities(accessor.accessor$getSpawnerLogic()),
                 (accessor, value) -> {
                     final AbstractSpawnerAccessor logic = (AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic();
@@ -133,36 +133,36 @@ public class TileEntityDataProviders extends DataProviderRegistryBuilder {
                     SpawnerUtils.setNextEntity((AbstractSpawner) logic, SpawnerUtils.getNextEntity(logic));
                 });
 
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_MAXIMUM_DELAY,
+        register(MobSpawnerTileEntityAccessor.class, Keys.MAXIMUM_DELAY,
                 (accessor) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$getMaxSpawnDelay(),
                 (accessor, value) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$setMaxSpawnDelay(value));
 
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_MINIMUM_DELAY,
+        register(MobSpawnerTileEntityAccessor.class, Keys.MINIMUM_DELAY,
                 (accessor) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$getMinSpawnDelay(),
                 (accessor, value) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$setMinSpawnDelay(value));
 
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_MAXIMUM_NEARBY_ENTITIES,
+        register(MobSpawnerTileEntityAccessor.class, Keys.MAXIMUM_NEARBY_ENTITIES,
                 (accessor) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$getMaxNearbyEntities(),
                 (accessor, value) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$setMaxNearbyEntities(value));
 
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_NEXT_ENTITY_TO_SPAWN,
+        register(MobSpawnerTileEntityAccessor.class, Keys.NEXT_ENTITY_TO_SPAWN,
                 (accessor) -> SpawnerUtils.getNextEntity((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()),
                 (accessor, value) -> SpawnerUtils.setNextEntity(accessor.accessor$getSpawnerLogic(), value));
 
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_REMAINING_DELAY,
+        register(MobSpawnerTileEntityAccessor.class, Keys.REMAINING_DELAY,
                 (accessor) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$getSpawnDelay(),
                 (accessor, value) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$setSpawnDelay(value));
 
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_REQUIRED_PLAYER_RANGE,
+        register(MobSpawnerTileEntityAccessor.class, Keys.REQUIRED_PLAYER_RANGE,
                 (accessor) -> (double) ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$getActivatingRangeFromPlayer(),
                 (accessor, value) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic())
                         .accessor$setActivatingRangeFromPlayer(value.intValue()));
 
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_SPAWN_COUNT,
+        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWN_COUNT,
                 (accessor) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$getSpawnCount(),
                 (accessor, value) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$setSpawnCount(value));
 
-        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWNER_SPAWN_RANGE,
+        register(MobSpawnerTileEntityAccessor.class, Keys.SPAWN_RANGE,
                 (accessor) -> (double) ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$getSpawnRange(),
                 (accessor, value) -> ((AbstractSpawnerAccessor) accessor.accessor$getSpawnerLogic()).accessor$setSpawnRange(value.intValue()));
     }
@@ -197,13 +197,13 @@ public class TileEntityDataProviders extends DataProviderRegistryBuilder {
     }
 
     private void registerFurnace() {
-        register(AbstractFurnaceTileEntityAccessor.class, Keys.PASSED_BURN_TIME,
-                e -> e.accessor$getRecipesUsed() - e.accessor$getBurnTime(),
-                (e, burnTime) -> {
-                    if (burnTime <= e.accessor$getRecipesUsed()) {
-                        e.accessor$setBurnTime(e.accessor$getRecipesUsed() - burnTime);
-                    }
-                });
+        register(AbstractFurnaceTileEntityAccessor.class, Keys.FUEL,
+                AbstractFurnaceTileEntityAccessor::accessor$getBurnTime,
+                AbstractFurnaceTileEntityAccessor::accessor$setBurnTime);
+        register(BrewingStandTileEntityAccessor.class, Keys.FUEL,
+                BrewingStandTileEntityAccessor::accessor$getFuel,
+                BrewingStandTileEntityAccessor::accessor$setFuel);
+
         register(AbstractFurnaceTileEntityAccessor.class, Keys.MAX_BURN_TIME,
                 AbstractFurnaceTileEntityAccessor::accessor$getRecipesUsed,
                 AbstractFurnaceTileEntityAccessor::accessor$setRecipesUsed);

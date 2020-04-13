@@ -403,8 +403,7 @@ public class EntityDataProviders extends DataProviderRegistryBuilder {
                 (accessor) -> !accessor.accessor$getDontSetBlock(),
                 (accessor, value) -> accessor.accessor$setDontSetAsBlock(!value));
 
-        // TODO old Key in API? CAN_DROP_AS_ITEM
-        register(FallingBlockEntity.class, Keys.SHOULD_DROP,
+        register(FallingBlockEntity.class, Keys.CAN_DROP_AS_ITEM,
                 (accessor) -> accessor.shouldDropItem,
                 (accessor, value) -> accessor.shouldDropItem = value);
 
@@ -426,19 +425,19 @@ public class EntityDataProviders extends DataProviderRegistryBuilder {
     }
 
     private void registerArmorStandEntityData() {
-        register(ArmorStandEntity.class, Keys.ARMOR_STAND_HAS_ARMS,
+        register(ArmorStandEntity.class, Keys.HAS_ARMS,
                 ArmorStandEntity::getShowArms,
                 (accessor, value) -> ((ArmorStandEntityAccessor) accessor).accessor$setShowArms(value));
 
-        register(ArmorStandEntity.class, Keys.ARMOR_STAND_HAS_BASE_PLATE,
+        register(ArmorStandEntity.class, Keys.HAS_BASE_PLATE,
                 (accessor) -> !accessor.hasNoBasePlate(),
                 (accessor, value) -> ((ArmorStandEntityAccessor) accessor).accessor$setNoBasePlate(!value));
 
-        register(ArmorStandEntity.class, Keys.ARMOR_STAND_HAS_MARKER,
+        register(ArmorStandEntity.class, Keys.HAS_MARKER,
                 ArmorStandEntity::hasMarker,
                 (accessor, value) -> ((ArmorStandEntityAccessor) accessor).accessor$setMarker(value));
 
-        register(ArmorStandEntity.class, Keys.ARMOR_STAND_IS_SMALL,
+        register(ArmorStandEntity.class, Keys.IS_SMALL,
                 ArmorStandEntity::isSmall,
                 (accessor, value) -> ((ArmorStandEntityAccessor) accessor).accessor$setSmall(value));
 
@@ -493,35 +492,35 @@ public class EntityDataProviders extends DataProviderRegistryBuilder {
     }
 
     private void registerAreaEffectCloudEntityData() {
-        register(AreaEffectCloudEntity.class, Keys.AREA_EFFECT_CLOUD_AGE,
+        register(AreaEffectCloudEntity.class, Keys.AGE,
                 (accessor) -> accessor.ticksExisted,
                 (accessor, value) -> accessor.ticksExisted = value);
 
-        register(AreaEffectCloudEntity.class, Keys.AREA_EFFECT_CLOUD_REAPPLICATION_DELAY,
+        register(AreaEffectCloudEntity.class, Keys.REAPPLICATION_DELAY,
                 (accessor) -> accessor.ticksExisted,
                 (accessor, value) -> accessor.ticksExisted = value);
 
-        register(AreaEffectCloudEntity.class, Keys.AREA_EFFECT_CLOUD_COLOR,
+        register(AreaEffectCloudEntity.class, Keys.COLOR,
                 (accessor) -> Color.ofRgb(accessor.getColor()),
                 (accessor, value) -> accessor.setColor(value.getRgb()));
 
-        register(AreaEffectCloudEntityAccessor.class, Keys.AREA_EFFECT_CLOUD_DURATION_ON_USE,
+        register(AreaEffectCloudEntityAccessor.class, Keys.DURATION_ON_USE,
                 AreaEffectCloudEntityAccessor::accessor$getDurationOnUse,
                 AreaEffectCloudEntityAccessor::accessor$setDurationOnUse);
 
-        register(AreaEffectCloudEntity.class, Keys.AREA_EFFECT_CLOUD_DURATION,
+        register(AreaEffectCloudEntity.class, Keys.DURATION,
                 AreaEffectCloudEntity::getDuration,
                 AreaEffectCloudEntity::setDuration);
 
-        register(AreaEffectCloudEntity.class, Keys.AREA_EFFECT_CLOUD_RADIUS_ON_USE,
+        register(AreaEffectCloudEntity.class, Keys.RADIUS_ON_USE,
                 (accessor) -> (double) ((AreaEffectCloudEntityAccessor) accessor).accessor$getRadiusOnUse(),
                 (accessor, value) -> accessor.setRadiusOnUse(value.floatValue()));
 
-        register(AreaEffectCloudEntity.class, Keys.AREA_EFFECT_CLOUD_RADIUS,
+        register(AreaEffectCloudEntity.class, Keys.RADIUS,
                 (accessor) -> (double) accessor.getRadius(),
                 (accessor, value) -> accessor.setRadius(value.floatValue()));
 
-        register(AreaEffectCloudEntity.class, Keys.AREA_EFFECT_CLOUD_WAIT_TIME,
+        register(AreaEffectCloudEntity.class, Keys.WAIT_TIME,
                 (accessor) -> ((AreaEffectCloudEntityAccessor) accessor).accessor$getWaitTime(),
                 AreaEffectCloudEntity::setWaitTime);
 

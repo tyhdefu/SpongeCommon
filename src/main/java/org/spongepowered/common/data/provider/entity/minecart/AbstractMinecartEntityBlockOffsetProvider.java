@@ -33,7 +33,7 @@ import java.util.Optional;
 public class AbstractMinecartEntityBlockOffsetProvider extends GenericMutableDataProvider<AbstractMinecartEntity, Integer> {
 
     public AbstractMinecartEntityBlockOffsetProvider() {
-        super(Keys.MINECART_BLOCK_OFFSET);
+        super(Keys.BLOCK_OFFSET);
     }
 
     @Override

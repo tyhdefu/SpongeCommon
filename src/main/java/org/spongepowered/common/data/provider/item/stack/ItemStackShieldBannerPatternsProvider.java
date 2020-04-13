@@ -57,7 +57,7 @@ public class ItemStackShieldBannerPatternsProvider extends ItemStackDataProvider
     }
 
     public ItemStackShieldBannerPatternsProvider() {
-        super(Keys.BANNER_PATTERN_LAYERS);
+        super(Keys.PATTERN_LAYERS);
     }
 
     @Override

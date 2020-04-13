@@ -35,8 +35,8 @@ public class LocationDataProviders extends DataProviderRegistryBuilder {
 
     @Override
     public void register() {
-        this.register(new GroundLuminanceProvider());
-        this.register(new SkyLuminanceProvider());
+        this.register(new BlockLightProvider());
+        this.register(new SkyLightProvider());
         this.register(new BiomeTemperatureProvider());
         this.register(new TemperatureProvider());
 

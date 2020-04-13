@@ -38,7 +38,7 @@ import java.util.Set;
 public class ArmorStandEntityTakingDisabledProvider extends GenericMutableDataProvider<ArmorStandEntity, Set<EquipmentType>> {
 
     public ArmorStandEntityTakingDisabledProvider() {
-        super(Keys.ARMOR_STAND_TAKING_DISABLED);
+        super(Keys.TAKING_DISABLED);
     }
 
     @Override
