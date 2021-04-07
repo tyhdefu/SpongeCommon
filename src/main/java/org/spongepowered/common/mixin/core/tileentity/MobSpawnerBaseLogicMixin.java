@@ -43,8 +43,11 @@ import org.spongepowered.api.event.cause.EventContextKeys;
 import org.spongepowered.api.event.cause.entity.spawn.SpawnTypes;
 import org.spongepowered.api.event.entity.ConstructEntityEvent;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.util.PrettyPrinter;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.SpongeImplHooks;
@@ -57,6 +60,21 @@ import javax.annotation.Nullable;
 
 @Mixin(MobSpawnerBaseLogic.class)
 public abstract class MobSpawnerBaseLogicMixin {
+
+    @Shadow public abstract World getSpawnerWorld();
+
+    @Nullable
+    private Entity impl$cachedEntity = null;
+
+    private int ticks;
+
+    @Inject(method = "<init>", at = @At(value = "RETURN"))
+    public void initTicks(CallbackInfo ci) {
+        World world = getSpawnerWorld();
+        if (world != null) {
+            this.ticks = world.rand.nextInt(20);
+        }
+    }
 
     /**
      * @author gabizou - January 30th, 2016
@@ -86,6 +104,12 @@ public abstract class MobSpawnerBaseLogicMixin {
     )
     private Entity impl$ThrowEventAndConstruct(
         final NBTTagCompound compound, final World world, final double x, final double y, final double z, final boolean doesNotForceSpawn) {
+
+        if (impl$cachedEntity != null) {
+            impl$cachedEntity.setPosition(x, y, z);
+            return impl$cachedEntity;
+        }
+
         final String entityTypeString = compound.getString(Constants.Entity.ENTITY_TYPE_ID);
         final Class<? extends Entity> clazz = SpongeImplHooks.getEntityClass(new ResourceLocation(entityTypeString));
         if (clazz == null) {
@@ -119,6 +143,7 @@ public abstract class MobSpawnerBaseLogicMixin {
         final Entity entity;
         try {
             entity = EntityList.createEntityFromNBT(compound, world);
+            this.impl$cachedEntity = entity;
         } catch (Exception e) {
             return null;
         }
@@ -145,6 +170,20 @@ public abstract class MobSpawnerBaseLogicMixin {
             }
         }
         return entity;
+    }
+
+    @Inject(method = "updateSpawner", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/storage/AnvilChunkLoader;spawnEntity(Lnet/minecraft/entity/Entity;Lnet/minecraft/world/World;)V"))
+    public void resetCachedEntity(CallbackInfo ci) {
+        this.impl$cachedEntity = null;
+    }
+
+    @Inject(method = "updateSpawner", at = @At(value = "RETURN"))
+    public void resetCachedEntityOnReturn(CallbackInfo ci) {
+        ticks++;
+        if (ticks > 20) {
+            this.impl$cachedEntity = null;
+            ticks = 0;
+        }
     }
 
 }
